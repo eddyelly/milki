@@ -30,6 +30,7 @@ Stop with `docker compose -f infra/docker-compose.yml down` (add `-v` to wipe da
 ./network/scripts/up.sh                      # Org1 Ministry, Org2 Land Office, Org3 Banks + land-channel + chaincode
 ./network/scripts/deploy-cc.sh -ccv 1.2 -ccs 3   # upgrade chaincode
 ./network/scripts/enroll.sh registrar1 REGISTRAR # CA identity with role attribute
+./network/scripts/start.sh                   # resume after a reboot / Docker restart (keeps ledger data)
 ./network/scripts/down.sh
 ```
 
@@ -56,6 +57,18 @@ npm run test:integration      # full stack on the live network (needs network + 
 
 Sign-in sends a 6-digit code by "SMS"; in dev it lands in Mailpit at http://localhost:8126.
 
+## Web portal (Phase 6)
+
+```bash
+cd web
+cp .env.example .env.local
+npm run dev                  # http://localhost:3100 (needs the API on :4100)
+npm test                     # component tests (ConfirmAction, status badges)
+npm run test:e2e             # Playwright: login → approve transfer on the live stack
+```
+
+Sign in with a staff demo account (e.g. `registrar@milki.dev` / `Milki@2026`); the SMS code is in Mailpit. Landowners use the mobile app.
+
 ## Build progress
 
 - [x] 1. Infra
@@ -63,7 +76,7 @@ Sign-in sends a 6-digit code by "SMS"; in dev it lands in Mailpit at http://loca
 - [x] 3. Chaincode
 - [x] 4. Backend core
 - [x] 5. Transfers and documents
-- [ ] 6. Web portal
+- [x] 6. Web portal
 - [ ] 7. Mobile app
 - [ ] 8. Support
 - [ ] 9. Admin and partner API

@@ -65,7 +65,14 @@ export async function history(user: AuthUser, parcelId: string) {
   const current = await ledger.evaluate<LedgerParcel>(wu, 'GetParcel', [parcelId]);
   assertCanView(user, current);
   const entries = await ledger.evaluate<LedgerHistoryEntry[]>(wu, 'GetParcelHistory', [parcelId]);
+  // Officials see owner names on the chain; citizens see only opaque IDs.
+  const names = new Map<string, string>();
+  if (user.role !== 'CITIZEN') {
+    const ids = [...new Set(entries.map((e) => e.parcel?.ownerId).filter((x): x is string => Boolean(x)))];
+    for (const u of await User.find({ userId: { $in: ids } }, { userId: 1, fullName: 1 }).lean()) names.set(u.userId, u.fullName);
+  }
   return entries.map((e) => ({
+    ownerName: e.parcel?.ownerId ? (names.get(e.parcel.ownerId) ?? null) : null,
     txId: e.txId,
     timestamp: e.timestamp,
     status: e.parcel?.status ?? null,

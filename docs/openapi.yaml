@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Milki API
-  version: 0.5.0
+  version: 0.6.0
   description: |
     Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
 
@@ -25,6 +25,8 @@ tags:
   - name: Documents
   - name: Notifications
   - name: Users
+  - name: Disputes
+  - name: Stats
   - name: Ledger
   - name: Health
 components:
@@ -345,6 +347,22 @@ paths:
   /parcels/{parcelId}/disputes:
     parameters: [{ $ref: '#/components/parameters/ParcelId' }]
     get: { tags: [Parcels], security: [{ bearer: [] }], summary: Disputes (ledger), responses: { '200': { description: OK } } }
+    post:
+      tags: [Disputes]
+      security: [{ bearer: [] }]
+      summary: Flag a dispute (LAND_OFFICER, T3) — the parcel becomes DISPUTED and transfers stop
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, summary]
+              properties:
+                category: { type: string, enum: [OWNERSHIP, BOUNDARY, INHERITANCE, FRAUD, COURT_ORDER, OTHER] }
+                summary: { type: string, minLength: 10, maxLength: 500, description: Stored on-chain — no personal data }
+      responses: { '202': { description: 'Submitted: { txId, disputeId, parcelId }' }, '403': { $ref: '#/components/responses/Error' } }
   /parcels/{parcelId}/transfers:
     parameters: [{ $ref: '#/components/parameters/ParcelId' }]
     get: { tags: [Parcels], security: [{ bearer: [] }], summary: Transfers (ledger), responses: { '200': { description: OK } } }
@@ -593,3 +611,26 @@ paths:
       summary: Remove this device's token (on sign-out)
       parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
       responses: { '200': { description: OK } }
+
+  /disputes/{disputeId}/notes:
+    post:
+      tags: [Disputes]
+      security: [{ bearer: [] }]
+      summary: Add a note (LAND_OFFICER or REGISTRAR, T3)
+      parameters: [{ name: disputeId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [note], properties: { note: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' } }
+  /disputes/{disputeId}/resolve:
+    post:
+      tags: [Disputes]
+      security: [{ bearer: [] }]
+      summary: Resolve (LAND_OFFICER or REGISTRAR, T3)
+      parameters: [{ name: disputeId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [resolution], properties: { resolution: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' } }
+  /stats/overview:
+    get:
+      tags: [Stats]
+      security: [{ bearer: [] }]
+      summary: Dashboard KPIs for staff (parcels/transfers by status, by region, last 6 months, work queues). Cached 60 s.
+      responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Error' } }

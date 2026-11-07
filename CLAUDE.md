@@ -104,6 +104,7 @@ Then write `network/scripts/deploy-cc.sh`. It must:
   - `env.sh` holds the shared version, channel and chaincode settings.
   - `up.sh` installs Fabric, brings up Org1–Org3 and `land-channel`, then deploys the chaincode.
   - `down.sh` tears the network down.
+  - `start.sh` resumes the existing containers after a reboot or Docker restart, keeping ledger data.
   - `deploy-cc.sh [-ccv X -ccs N]` deploys or upgrades for all 3 orgs. It ends with a smoke test whose transaction is endorsed by Org1 + Org3.
   - `enroll.sh <user> <ROLE>` registers a CA identity with `role=<ROLE>:ecert`.
   - `pull-images.sh` is the Docker Hub fallback when ghcr.io is unreachable.
@@ -146,6 +147,40 @@ npm i motion @tanstack/react-query @tanstack/react-table axios react-hook-form @
       socket.io-client next-themes lucide-react recharts lottie-react react-leaflet leaflet qrcode.react date-fns
 npm i -D @types/leaflet
 ```
+
+**Web decisions (Phase 6):**
+- **shadcn registry:** when `ui.shadcn.com` is unreachable (it is blocked in the cloud dev sandbox), `shadcn init` cannot run.
+  - Init is served dynamically (`/init?base=…`), so a mirror can't provide it.
+  - Instead, `web/components.json` was written by hand (`style: new-york`, Tailwind v4, aliases `@/components`, `@/lib`, `@/hooks`).
+  - Then the official CLI ran `shadcn add index` and the §4.4 `shadcn add …` list with `REGISTRY_URL` pointing at a local copy of shadcn's `new-york-v4` registry, built from github.com/shadcn-ui/ui.
+  - With registry access, `npx shadcn@latest add <name>` works normally.
+- **Small edits to generated components:**
+  - `button.tsx` gets the `press` class (0.97 scale on press).
+  - `command.tsx`: `CommandDialog` forwards `shouldFilter`.
+  - `sidebar.tsx` skeleton width no longer calls `Math.random`.
+  - `use-mobile.ts` uses `useSyncExternalStore`.
+- **Next 16** (`cacheComponents` and `partialPrefetching` are on by default):
+  - Every portal `page.tsx` is a small server file exporting `instant = false` and rendering a client `*-view.tsx`. Portal pages wait for the client session, so they cannot be prerendered.
+  - Route `params` are read behind `<Suspense>`.
+  - `(portal)/layout.tsx` is a server layout that suspends the client `PortalShell`.
+  - Route params are Promises: `use(params)` in client views.
+- **Auth in the browser:**
+  - The access token is kept in memory only. The refresh token is the API's httpOnly cookie.
+  - A non-sensitive `localStorage` hint (`milki_session_hint`) avoids a pointless refresh (and 401) for signed-out visitors.
+  - Citizens who sign in see a "use the mobile app" screen.
+- **ConfirmAction** (`src/components/confirm-action.tsx`) implements T1, T2 and T3.
+  - T3: review, then re-authentication (password or SMS code), then `SealedOnLedger` (submitting → endorsing → committed with block number and txId).
+  - The idempotency key is fixed for the life of one dialog.
+  - Typed confirmation (`typeToConfirm`) also gates destructive T3 actions (cancel, reject, retire).
+- **Records refresh live** while a dialog is open. Action buttons render from `useSnapshotWhileOpen()`, so a commit can't unmount the dialog mid-animation.
+- **Read receipts** (mark notification read / all read) are UI state, not user data, so they have no confirmation. Deleting a notification is T1.
+- **Live data:** Socket.IO `ledger:event`, `queue:updated` and `notification` invalidate React Query caches. `waitForCommit()` listens for `ledger:tx` and polls `GET /ledger/tx/:id` as a fallback.
+- **Tables:** TanStack Table **v9** (`tableFeatures` + `useTable`), core row model only; paging and sorting are server-side. Tables are never animated.
+- **Backend additions** for the portal: `GET /stats/overview` (dashboard, 60 s Redis cache), `POST /parcels/:id/disputes`, `POST /disputes/:id/notes`, `POST /disputes/:id/resolve`. Parcel history includes owner names for staff.
+- **Tests:**
+  - `npm test`: Vitest + Testing Library on jsdom, covering `ConfirmAction` and `StatusBadge`. There is no `@vitejs/plugin-react`, because its Babel 8 peer clashes with shadcn's Babel 7; Vitest's built-in JSX transform is used instead.
+  - `npm run test:e2e`: Playwright (pinned to the installed 1.63) smoke test of login → approve transfer on the live stack. Set `PLAYWRIGHT_CHROMIUM_PATH` to use a pre-installed Chromium.
+  - `@types/node` is ^22, matching Node 22 and Vitest's peer.
 
 ### 4.5 Mobile app
 ```bash
