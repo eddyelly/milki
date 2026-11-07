@@ -43,12 +43,25 @@ npm run coverage                     # enforces ≥90% branch coverage
 ./network/scripts/smoke-flow.sh      # end-to-end transfer on the live network
 ```
 
+## Backend (Phase 4)
+
+```bash
+cd backend
+cp .env.example .env          # then set real secrets (see comments)
+npm run seed                  # demo account per role, password Milki@2026 (dev only)
+npm run dev                   # http://localhost:4100 — docs at http://localhost:4100/api/docs
+npm test                      # unit/API tests (needs infra up)
+npm run test:integration      # full stack on the live network (needs network + running API)
+```
+
+Sign-in sends a 6-digit code by "SMS"; in dev it lands in Mailpit at http://localhost:8126.
+
 ## Build progress
 
 - [x] 1. Infra
 - [x] 2. Fabric network
 - [x] 3. Chaincode
-- [ ] 4. Backend core
+- [x] 4. Backend core
 - [ ] 5. Transfers and documents
 - [ ] 6. Web portal
 - [ ] 7. Mobile app

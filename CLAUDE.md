@@ -129,7 +129,10 @@ npm i express @hyperledger/fabric-gateway @grpc/grpc-js mongoose ioredis bullmq 
 npm i -D typescript tsx @types/node @types/express @types/cors @types/cookie-parser @types/jsonwebtoken \
       @types/bcrypt @types/multer @types/nodemailer @types/swagger-ui-express vitest supertest @types/supertest
 npx tsc --init
+npm i fabric-ca-client fabric-common     # Fabric CA register/enroll (not covered by fabric-gateway)
+npm i -D socket.io-client                # integration test listens for ledger:tx
 ```
+The backend compiles to CommonJS (`tsconfig.build.json` → `dist/`). Tests type-check separately with `test/tsconfig.json` (bundler resolution), because Vitest runs them as ESM. The Vitest configs are `.mts`.
 
 ### 4.4 Web portal
 ```bash
@@ -204,32 +207,48 @@ Commit an `.env.example` for each app. Never commit a real `.env`.
 ```
 PORT=4100
 NODE_ENV=development
+LOG_LEVEL=info
 MONGO_URI=mongodb://milki:milki_dev@localhost:27117/milki?authSource=admin
 REDIS_URL=redis://:milki_dev@localhost:6390
 MINIO_ENDPOINT=localhost
 MINIO_PORT=9100
+MINIO_USE_SSL=false
 MINIO_ACCESS_KEY=milki
 MINIO_SECRET_KEY=milki_dev_secret
 MINIO_BUCKET=milki-documents
 SMTP_HOST=localhost
 SMTP_PORT=1126
-JWT_ACCESS_SECRET=change_me
-JWT_REFRESH_SECRET=change_me_too
+SMTP_FROM="Milki <no-reply@milki.go.tz>"
+JWT_ACCESS_SECRET=change_me_access_secret_at_least_32_chars
+JWT_REFRESH_SECRET=change_me_refresh_secret_at_least_32_chars
 JWT_ACCESS_TTL=15m
 JWT_REFRESH_TTL=7d
-WALLET_ENCRYPTION_KEY=32_byte_hex_key
-PII_HASH_SALT=change_me
+# 32-byte key as 64 hex chars: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+WALLET_ENCRYPTION_KEY=0000000000000000000000000000000000000000000000000000000000000000
+PII_HASH_SALT=change_me_pii_salt
 FABRIC_CHANNEL=land-channel
 FABRIC_CHAINCODE=land-registry
 FABRIC_ORGS_PATH=../network/fabric-samples/test-network/organizations
+FABRIC_CA_ADMIN_ID=admin
+FABRIC_CA_ADMIN_SECRET=adminpw
 ORG1_PEER_ENDPOINT=localhost:7051
 ORG1_PEER_HOST_ALIAS=peer0.org1.example.com
+ORG1_CA_URL=https://localhost:7054
+ORG1_CA_NAME=ca-org1
 ORG2_PEER_ENDPOINT=localhost:9051
 ORG2_PEER_HOST_ALIAS=peer0.org2.example.com
+ORG2_CA_URL=https://localhost:8054
+ORG2_CA_NAME=ca-org2
 ORG3_PEER_ENDPOINT=localhost:11051
 ORG3_PEER_HOST_ALIAS=peer0.org3.example.com
+ORG3_CA_URL=https://localhost:11054
+ORG3_CA_NAME=ca-org3
+# Set to false to run the API without a Fabric network (ledger endpoints then return 503).
+FABRIC_ENABLED=true
 CORS_ORIGINS=http://localhost:3100
 FCM_SERVICE_ACCOUNT_PATH=./secrets/firebase.json
+# Test/dev only: relax auth rate limits (requests per minute per IP).
+AUTH_RATE_LIMIT_PER_MIN=20
 ```
 
 **web/.env.example**
@@ -464,6 +483,45 @@ Do not animate data tables or anything a user reads repeatedly in long sessions.
   - Every call is audited.
 - **API docs:** keep `docs/openapi.yaml` current and serve it at `/api/docs`.
 - **Logging:** use pino with request IDs. Never log tokens, keys or PII.
+
+**Backend decisions (Phase 4):**
+- **Sign-in is two steps for every role:** password, then a 6-digit SMS OTP (`POST /auth/login` → `POST /auth/otp/verify`).
+  - Registration is confirmed with the same OTP step.
+  - OTPs are stored hashed in Redis for 5 minutes, allow at most 5 wrong attempts, and work once.
+  - SMS is mocked as email to `<phone>@sms.milki.local`, so codes appear in Mailpit.
+- **Tokens:**
+  - Access JWT lasts 15 minutes.
+  - Refresh JWT lasts 7 days and is **single-use with rotation**: a used `jti` is denylisted in Redis.
+  - The web portal receives the refresh token as an httpOnly cookie `milki_rt` (path `/api/v1/auth`). Mobile receives it in the response body.
+- **T3 re-authentication:** `POST /auth/reauth` accepts a password, or a REAUTH OTP from `POST /auth/reauth/otp`. It returns a **single-use** `X-Reauth-Token` valid for 5 minutes, which every ledger write requires. Mobile biometrics (Phase 7) will unlock a device credential for this step.
+- **Idempotency:**
+  - A repeat of a completed **2xx** request is replayed (`Idempotent-Replayed: true`) rather than rejected, so a retried ledger write never submits twice.
+  - Any error response releases the key.
+  - The same key with a different body returns 422. A repeat while the first request is still running returns 409.
+  - T3 middleware order: `requireRole → idempotent → requireReauth → validate`.
+- **Fabric:**
+  - **User IDs:** `usr_<ObjectId>`, which is also the CA enrollment ID and the on-chain owner/party ID.
+  - **Wallet:** Mongo collection `wallet`. The private key is sealed with AES-256-GCM, using AAD `milki-wallet:<label>`.
+  - **Enrollment** happens on OTP verification or seeding. If the CA is down, sign-in still works and enrollment happens on the first ledger call.
+  - **Read-only service identity** `svc_milki_api_<org>` (no `role` attribute). Used for the event listener, health checks and public verification.
+  - **Connections:** one gRPC client per org. Each request opens a lightweight Gateway with the caller's identity.
+  - **CA bootstrap admin:** configured via `FABRIC_CA_ADMIN_ID/SECRET` and held in memory only.
+- **Ledger writes:**
+  - `submitAsync`, then `202 {txId, status:"SUBMITTED"}`. Each write is tracked in `ledger_transactions`.
+  - The commit is pushed as Socket.IO `ledger:tx` to room `user:<userId>`. `GET /ledger/tx/:txId` is the polling fallback.
+  - Chaincode errors map to HTTP: 400 / 403 / 404 / 409. An unreachable network returns 503 `LEDGER_UNAVAILABLE`.
+- **Event listener:**
+  - The checkpoint is stored in Mongo (`checkpoints`). The first start replays from block 0 to rebuild caches.
+  - Every `milki.*` event refreshes its parcel in `parcel_cache` (via the service identity).
+  - Handlers are registered with `onLedgerEvent()`.
+- **Parcel reads:**
+  - `GET /parcels/:id` and its related reads come **from the ledger**. `GET /parcels` lists from the cache.
+  - Citizens can only read their own parcels; other parcels go through public verification (Phase 7).
+  - Officials see the owner's name and phone. `ownerNidaHash` never leaves the backend.
+- **Startup:** creates the MinIO bucket and serves `/api/docs` (Swagger UI) plus `/api/docs/openapi.json`. `GET /api/v1/health` reports the status of Mongo, Redis and the ledger.
+- **Tests:**
+  - `npm test`: Vitest + supertest against real Mongo/Redis from `infra/` (DB `milki_test`, Redis DB 1), with Fabric and SMS mocked.
+  - `npm run test:integration`: drives the running API on the live network, reading OTPs from Mailpit.
 
 ---
 

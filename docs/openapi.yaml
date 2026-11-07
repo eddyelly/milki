@@ -1,0 +1,372 @@
+openapi: 3.1.0
+info:
+  title: Milki API
+  version: 0.4.0
+  description: |
+    Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
+
+    **Conventions**
+    - Success envelope: `{ "data": ..., "meta": ... }`. Error envelope: `{ "error": { "code", "message", "details" } }`.
+      `message` is human-readable and safe to show to users.
+    - Every write sends an `Idempotency-Key` header (8–128 URL-safe chars). A repeat of a completed request is
+      replayed with `Idempotent-Replayed: true` instead of executing again.
+    - **Ledger writes** (T3) also need `X-Reauth-Token` from `POST /auth/reauth` (single use, 5 minutes) and return
+      `202 { txId, status: "SUBMITTED" }`. The commit arrives on Socket.IO as `ledger:tx`
+      (`{ txId, status: COMMITTED|FAILED, blockNumber }`); `GET /ledger/tx/{txId}` is the polling fallback.
+    - `meta.source` says where data came from: `ledger` (authoritative) or `cache` (lists/search).
+servers:
+  - url: http://localhost:4100/api/v1
+tags:
+  - name: Auth
+  - name: Parcels
+  - name: Ledger
+  - name: Health
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128 }
+    ReauthToken:
+      name: X-Reauth-Token
+      in: header
+      required: true
+      description: From `POST /auth/reauth`. Single use, valid 5 minutes.
+      schema: { type: string }
+    ParcelId:
+      name: parcelId
+      in: path
+      required: true
+      schema: { type: string, example: DSM-KIN-12-45 }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: PARCEL_ENCUMBERED }
+            message: { type: string, example: This parcel has an active mortgage with CRDB Bank. It must be released before the parcel can be transferred. }
+            details: {}
+    Submitted:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            txId: { type: string }
+            status: { type: string, enum: [SUBMITTED] }
+            parcelId: { type: string }
+        meta: { type: 'null' }
+    OtpChallenge:
+      type: object
+      properties:
+        challengeId: { type: string }
+        sentTo: { type: string, example: '+255•••••001' }
+        expiresIn: { type: integer, example: 300 }
+        purpose: { type: string, enum: [REGISTER, LOGIN] }
+    User:
+      type: object
+      properties:
+        userId: { type: string, example: usr_6650c1f2a9e4b1c2d3e4f5a6 }
+        role: { type: string, enum: [CITIZEN, LAND_OFFICER, REGISTRAR, BANK_OFFICER, SUPPORT_AGENT, SYSTEM_ADMIN] }
+        fullName: { type: string }
+        email: { type: [string, 'null'] }
+        phone: { type: string }
+        nidaMasked: { type: [string, 'null'] }
+        status: { type: string, enum: [PENDING_VERIFICATION, ACTIVE, DEACTIVATED] }
+        ledgerIdentity:
+          type: object
+          properties:
+            enrolled: { type: boolean }
+            mspId: { type: [string, 'null'] }
+    Session:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        accessToken: { type: string }
+        refreshToken: { type: string, description: Also set as httpOnly cookie `milki_rt` for the web portal. }
+        accessExpiresIn: { type: string, example: 15m }
+    Location:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude: { type: number }
+        longitude: { type: number }
+        boundary: { type: array, items: { type: array, items: { type: number }, minItems: 2, maxItems: 2 } }
+        address: { type: string }
+    Parcel:
+      type: object
+      properties:
+        parcelId: { type: string }
+        titleNumber: { type: string }
+        region: { type: string }
+        district: { type: string }
+        ward: { type: string }
+        area: { type: number, description: Square metres }
+        landUse: { type: string, enum: [RESIDENTIAL, COMMERCIAL, AGRICULTURAL, INDUSTRIAL, INSTITUTIONAL, MIXED_USE] }
+        location: { $ref: '#/components/schemas/Location' }
+        status: { type: string, enum: [ACTIVE, PENDING_TRANSFER, ENCUMBERED, DISPUTED, FROZEN, RETIRED] }
+        owner:
+          type: object
+          properties:
+            userId: { type: string }
+            fullName: { type: string, description: Officials only }
+        ownershipVersion: { type: integer }
+        activeTransferId: { type: [string, 'null'] }
+        updatedAt: { type: string, format: date-time }
+        lastTxId: { type: string }
+  responses:
+    Error:
+      description: Error
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Submitted:
+      description: Submitted to the ledger; commit status follows over Socket.IO.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Submitted' } } }
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Dependency health (MongoDB, Redis, ledger)
+      responses: { '200': { description: OK }, '503': { description: Degraded } }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Citizen self-registration (sends a phone OTP)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, phone, nida, password]
+              properties:
+                fullName: { type: string }
+                phone: { type: string, example: '0712 345 678' }
+                email: { type: string }
+                nida: { type: string, example: 19900101-12345-00001-01 }
+                password: { type: string, minLength: 8 }
+                preferredLanguage: { type: string, enum: [en, sw] }
+      responses:
+        '201':
+          description: Account created, OTP sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      userId: { type: string }
+                      challenge: { $ref: '#/components/schemas/OtpChallenge' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Password step of sign-in (sends an OTP)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: Phone number or email }
+                password: { type: string }
+      responses:
+        '200': { description: OTP sent, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/OtpChallenge' } } } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      summary: Confirm a REGISTER or LOGIN code and start a session
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [challengeId, code], properties: { challengeId: { type: string }, code: { type: string, pattern: '^\d{6}$' } } } } }
+      responses:
+        '200': { description: Session, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Session' } } } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /auth/otp/resend:
+    post:
+      tags: [Auth]
+      summary: Send a fresh code (the old challenge stops working)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [challengeId], properties: { challengeId: { type: string } } } } } }
+      responses: { '200': { description: New challenge }, '400': { $ref: '#/components/responses/Error' } }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate tokens (refresh token from body or the `milki_rt` cookie; each works once)
+      requestBody: { content: { application/json: { schema: { type: object, properties: { refreshToken: { type: string } } } } } }
+      responses: { '200': { description: New session }, '401': { $ref: '#/components/responses/Error' } }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the refresh token
+      responses: { '200': { description: Signed out } }
+  /auth/me:
+    get:
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      summary: Current user
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/User' } } } } } } }
+  /auth/reauth/otp:
+    post:
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      summary: Send a REAUTH code for a T3 confirmation
+      responses: { '200': { description: Challenge } }
+  /auth/reauth:
+    post:
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      summary: Re-authenticate for a ledger write (password or OTP) → single-use reauth token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - { type: object, required: [password], properties: { password: { type: string } } }
+                - { type: object, required: [challengeId, code], properties: { challengeId: { type: string }, code: { type: string } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { data: { type: object, properties: { reauthToken: { type: string }, expiresIn: { type: integer } } } } } } } }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /parcels:
+    get:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: List parcels (cache). Citizens see only their own.
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: q, in: query, schema: { type: string }, description: Search parcel ID, title, region, district, ward }
+        - { name: status, in: query, schema: { type: string }, description: 'Comma-separated, e.g. ACTIVE,ENCUMBERED' }
+        - { name: region, in: query, schema: { type: string } }
+        - { name: district, in: query, schema: { type: string } }
+        - { name: landUse, in: query, schema: { type: string } }
+        - { name: ownerId, in: query, schema: { type: string }, description: Officials only }
+        - { name: sort, in: query, schema: { type: string, enum: [updatedAt, -updatedAt, parcelId, -parcelId, area, -area, createdAt, -createdAt] } }
+      responses: { '200': { description: 'Page of parcels; meta = { page, limit, total, pages, source: cache }' } }
+    post:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Register a parcel (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [parcelId, titleNumber, region, district, ward, blockNumber, plotNumber, area, landUse, location, owner]
+              properties:
+                parcelId: { type: string, example: DSM-KIN-12-45 }
+                titleNumber: { type: string }
+                region: { type: string }
+                district: { type: string }
+                ward: { type: string }
+                blockNumber: { type: string }
+                plotNumber: { type: string }
+                area: { type: number }
+                landUse: { type: string }
+                location: { $ref: '#/components/schemas/Location' }
+                owner:
+                  oneOf:
+                    - { type: object, required: [userId], properties: { userId: { type: string } } }
+                    - { type: object, required: [nida], properties: { nida: { type: string } } }
+      responses:
+        '202': { $ref: '#/components/responses/Submitted' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /parcels/{parcelId}:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Parcel from the ledger
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Parcel' } } } } } }, '403': { $ref: '#/components/responses/Error' }, '404': { $ref: '#/components/responses/Error' } }
+    patch:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Update land use, area (with reason) or location (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                landUse: { type: string }
+                area: { type: number }
+                areaCorrectionReason: { type: string }
+                location: { $ref: '#/components/schemas/Location' }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '400': { $ref: '#/components/responses/Error' }, '409': { $ref: '#/components/responses/Error' } }
+  /parcels/{parcelId}/history:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Ownership/status history from the ledger (oldest first)
+      responses: { '200': { description: OK } }
+  /parcels/{parcelId}/encumbrances:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Encumbrances (ledger), responses: { '200': { description: OK } } }
+  /parcels/{parcelId}/disputes:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Disputes (ledger), responses: { '200': { description: OK } } }
+  /parcels/{parcelId}/transfers:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Transfers (ledger), responses: { '200': { description: OK } } }
+  /parcels/{parcelId}/documents:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Document references (ledger), responses: { '200': { description: OK } } }
+  /parcels/{parcelId}/freeze:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    post:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Freeze (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
+  /parcels/{parcelId}/unfreeze:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    post:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Unfreeze (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
+  /parcels/{parcelId}/retire:
+    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
+    post:
+      tags: [Parcels]
+      security: [{ bearer: [] }]
+      summary: Retire — the record stays, status becomes RETIRED (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
+
+  /ledger/tx/{txId}:
+    get:
+      tags: [Ledger]
+      security: [{ bearer: [] }]
+      summary: Status of a submitted transaction (SUBMITTED / COMMITTED / FAILED)
+      parameters: [{ name: txId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } }

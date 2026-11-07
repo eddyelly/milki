@@ -1,0 +1,6 @@
+{
+  // Tests run under Vitest (ESM transform), so they type-check with bundler resolution.
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "module": "preserve", "moduleResolution": "bundler", "rootDir": "..", "noEmit": true, "types": ["node"] },
+  "include": ["./**/*.ts", "../src/**/*.ts", "../vitest.config.mts", "../vitest.integration.config.mts"]
+}
