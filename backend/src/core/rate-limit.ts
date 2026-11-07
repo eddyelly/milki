@@ -20,3 +20,14 @@ export const authLimiter = rateLimit({
   store: store('auth'),
   message: limitedResponse('Too many attempts. Please wait a minute and try again.'),
 });
+
+/** T3 re-authentication: per signed-in user (not per IP), so staff behind one office NAT don't share a budget. */
+export const reauthLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.userId ?? 'anonymous',
+  store: store('reauth'),
+  message: limitedResponse('Too many confirmation attempts. Please wait a minute and try again.'),
+});

@@ -523,6 +523,31 @@ Do not animate data tables or anything a user reads repeatedly in long sessions.
   - `npm test`: Vitest + supertest against real Mongo/Redis from `infra/` (DB `milki_test`, Redis DB 1), with Fabric and SMS mocked.
   - `npm run test:integration`: drives the running API on the live network, reading OTPs from Mailpit.
 
+**Backend decisions (Phase 5):**
+- **Transfers API** (`/transfers`):
+  - Endpoints: `POST` initiate, then `/:id/accept`, `/:id/confirm-payments`, `/:id/verify`, `/:id/approve`, `/:id/cancel`, `/:id/reject`. All are T3.
+  - Cancel and reject also get the T2 typed confirmation in the UI.
+  - The buyer is given as `{userId|phone|nida}`. `GET /users/lookup` returns a short display name ("Juma H.") for the review screen.
+- **Private sale details:**
+  - The price and currency, masked NIDA references (`NIDA••••0101`) and salted contact hashes go **only** in the transient map. They never appear in args, logs or the audit log.
+  - `GET /transfers/:id` shows `sale` only to the parties, land officers and registrars. Support agents get the transfer without it; banks are refused.
+- **Payment evidence:** `confirm-payments` takes `evidenceDocumentId`, a receipt already attached to that transfer. Its stored SHA-256 becomes `paymentEvidenceHash` on-chain.
+- **Documents** (`/documents`):
+  - Multipart field `file`, at most 10 MB. PDF, JPEG and PNG only, checked by **magic bytes**.
+  - The server computes the SHA-256. If the client also sent one and it differs, the upload fails with 422 `HASH_MISMATCH`.
+  - Object key: `<target>/<id>/<sha256>.<ext>` in MinIO. Metadata lives in `document_files`. If the ledger refuses the document, the object is deleted.
+  - **Download** re-hashes the bytes and checks them with `VerifyDocument` on the ledger before sending (`X-Ledger-Verified`); on a mismatch it returns 409 `INTEGRITY_FAILURE`.
+  - `POST /documents/:id/verify` checks a file the caller holds.
+- **Event handlers**, in order: parcel cache → transfer cache (`transfer_cache`) → document status → audit (`ledger.<Entity>.<Action>`, idempotent per tx) → notifications.
+  - Live socket events: `ledger:event` to the people involved, and `queue:updated` to the `LAND_OFFICER` / `REGISTRAR` role rooms.
+- **Notifications:**
+  - BullMQ `notifications` queue. Each one is stored in `notifications`, sent over Socket.IO as `notification`, and pushed via FCM if `FCM_SERVICE_ACCOUNT_PATH` exists (otherwise push is skipped).
+  - Text is in the user's `preferredLanguage` (en/sw).
+  - Sent once per txId (Redis key). Replayed events older than 1 hour update caches and audit only.
+  - `/notifications` (list, mark read, mark all read, delete) and `/devices` (FCM tokens).
+- **Rate limits:** `/auth/reauth*` has its own per-user limiter (30/min). The per-IP `authLimiter` covers sign-in, registration and OTP.
+- **The `ledger-events` queue is not used.** Handlers run in the listener with a Mongo checkpoint, which gives at-least-once delivery. Handlers are idempotent.
+
 ---
 
 ## 13. Build phases (do in order; each ends with passing tests and a demo)

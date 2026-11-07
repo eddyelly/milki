@@ -18,3 +18,18 @@ export async function ensureBucket(): Promise<void> {
     logger.info({ bucket: env.MINIO_BUCKET }, 'created MinIO bucket');
   }
 }
+
+export async function putObject(key: string, data: Buffer, mimeType: string, meta: Record<string, string> = {}): Promise<void> {
+  await minio.putObject(env.MINIO_BUCKET, key, data, data.length, { 'Content-Type': mimeType, ...meta });
+}
+
+export async function getObjectBuffer(key: string): Promise<Buffer> {
+  const stream = await minio.getObject(env.MINIO_BUCKET, key);
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(chunk as Buffer);
+  return Buffer.concat(chunks);
+}
+
+export async function removeObject(key: string): Promise<void> {
+  await minio.removeObject(env.MINIO_BUCKET, key);
+}

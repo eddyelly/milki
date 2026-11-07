@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Milki API
-  version: 0.4.0
+  version: 0.5.0
   description: |
     Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
 
@@ -13,12 +13,18 @@ info:
     - **Ledger writes** (T3) also need `X-Reauth-Token` from `POST /auth/reauth` (single use, 5 minutes) and return
       `202 { txId, status: "SUBMITTED" }`. The commit arrives on Socket.IO as `ledger:tx`
       (`{ txId, status: COMMITTED|FAILED, blockNumber }`); `GET /ledger/tx/{txId}` is the polling fallback.
+    - Socket.IO events: `ledger:tx` (your commit), `ledger:event` (anything touching you), `notification` (new inbox item),
+      `queue:updated` (staff work queues).
     - `meta.source` says where data came from: `ledger` (authoritative) or `cache` (lists/search).
 servers:
   - url: http://localhost:4100/api/v1
 tags:
   - name: Auth
   - name: Parcels
+  - name: Transfers
+  - name: Documents
+  - name: Notifications
+  - name: Users
   - name: Ledger
   - name: Health
 components:
@@ -36,6 +42,16 @@ components:
       required: true
       description: From `POST /auth/reauth`. Single use, valid 5 minutes.
       schema: { type: string }
+    TransferId:
+      name: transferId
+      in: path
+      required: true
+      schema: { type: string, example: TRF-0A1B2C3D4E5F6789 }
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema: { type: string, example: DOC-0A1B2C3D4E5F6789 }
     ParcelId:
       name: parcelId
       in: path
@@ -370,3 +386,210 @@ paths:
       summary: Status of a submitted transaction (SUBMITTED / COMMITTED / FAILED)
       parameters: [{ name: txId, in: path, required: true, schema: { type: string } }]
       responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } }
+
+  /users/lookup:
+    get:
+      tags: [Users]
+      security: [{ bearer: [] }]
+      summary: Find an active landowner by phone or NIDA (CITIZEN, REGISTRAR, LAND_OFFICER) → userId + short display name
+      parameters:
+        - { name: phone, in: query, schema: { type: string } }
+        - { name: nida, in: query, schema: { type: string } }
+      responses: { '200': { description: '{ userId, displayName: "Juma H." }' }, '404': { $ref: '#/components/responses/Error' } }
+
+  /transfers:
+    get:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: List transfers (cache). Citizens see transfers they are part of; banks are refused.
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 100 } }
+        - { name: q, in: query, schema: { type: string }, description: Transfer or parcel ID fragment }
+        - { name: status, in: query, schema: { type: string }, description: Comma-separated statuses }
+        - { name: parcelId, in: query, schema: { type: string } }
+        - { name: role, in: query, schema: { type: string, enum: [seller, buyer, any] }, description: Citizens only }
+        - { name: sort, in: query, schema: { type: string, enum: [updatedAt, -updatedAt, createdAt, -createdAt] } }
+      responses: { '200': { description: Page of transfers } }
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Initiate a transfer (owner CITIZEN, T3). The sale price travels only in Fabric private data.
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [parcelId, buyer, salePrice]
+              properties:
+                parcelId: { type: string }
+                buyer:
+                  oneOf:
+                    - { type: object, required: [userId], properties: { userId: { type: string } } }
+                    - { type: object, required: [phone], properties: { phone: { type: string } } }
+                    - { type: object, required: [nida], properties: { nida: { type: string } } }
+                salePrice: { type: number }
+                currency: { type: string, default: TZS }
+      responses:
+        '202': { description: 'Submitted: { txId, transferId, parcelId, status: SUBMITTED }' }
+        '409': { $ref: '#/components/responses/Error' }
+  /transfers/{transferId}:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    get:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Transfer from the ledger, with both parties; `sale` (price) only for the parties, land officers and registrars
+      responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Error' } }
+  /transfers/{transferId}/documents:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    get: { tags: [Transfers], security: [{ bearer: [] }], summary: Documents attached to the transfer, responses: { '200': { description: OK } } }
+  /transfers/{transferId}/accept:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Buyer accepts (CITIZEN, T3) — INITIATED → BUYER_ACCEPTED
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
+  /transfers/{transferId}/confirm-payments:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Land officer confirms payments using a receipt already attached to the transfer (LAND_OFFICER, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [paymentReference, evidenceDocumentId], properties: { paymentReference: { type: string }, evidenceDocumentId: { type: string } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '400': { $ref: '#/components/responses/Error' } }
+  /transfers/{transferId}/verify:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Officer verification (LAND_OFFICER, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { note: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' } }
+  /transfers/{transferId}/approve:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Registrar approval — moves ownership; APPROVED → COMPLETED (REGISTRAR, T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { note: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' } }
+  /transfers/{transferId}/cancel:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Seller cancels before verification (CITIZEN, T2 confirmation in the UI + T3 re-auth)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
+  /transfers/{transferId}/reject:
+    parameters: [{ $ref: '#/components/parameters/TransferId' }]
+    post:
+      tags: [Transfers]
+      security: [{ bearer: [] }]
+      summary: Reject (LAND_OFFICER until verification, then REGISTRAR only; T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses: { '202': { $ref: '#/components/responses/Submitted' }, '403': { $ref: '#/components/responses/Error' } }
+
+  /documents:
+    post:
+      tags: [Documents]
+      security: [{ bearer: [] }]
+      summary: Upload a PDF/JPEG/PNG (≤10 MB) to MinIO and record its SHA-256 on-chain (T3)
+      description: |
+        Content type is checked by magic bytes. If `sha256` is sent, it must equal the server's hash of the received bytes
+        (422 HASH_MISMATCH otherwise). If the ledger refuses the document, the stored object is removed.
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, targetType, targetId, documentType]
+              properties:
+                file: { type: string, format: binary }
+                targetType: { type: string, enum: [PARCEL, TRANSFER] }
+                targetId: { type: string }
+                documentType: { type: string, enum: [TITLE_DEED, SALE_AGREEMENT, SURVEY_PLAN, ID_COPY, TAX_RECEIPT, PAYMENT_PROOF, VALUATION_REPORT, MORTGAGE_DEED, COURT_ORDER, OTHER] }
+                sha256: { type: string }
+      responses:
+        '202': { description: 'Submitted: { txId, documentId, sha256, status: SUBMITTED }' }
+        '413': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /documents/{documentId}/supersede:
+    parameters: [{ $ref: '#/components/parameters/DocumentId' }]
+    post:
+      tags: [Documents]
+      security: [{ bearer: [] }]
+      summary: Upload a new version; the old hash stays on the ledger as SUPERSEDED (T3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, required: [file], properties: { file: { type: string, format: binary }, sha256: { type: string } } } } } }
+      responses: { '202': { description: Submitted } }
+  /documents/{documentId}/download:
+    parameters: [{ $ref: '#/components/parameters/DocumentId' }]
+    get:
+      tags: [Documents]
+      security: [{ bearer: [] }]
+      summary: Download — bytes are re-hashed and checked against the ledger first (headers X-Ledger-Verified, X-Content-SHA256)
+      responses: { '200': { description: The file }, '409': { description: INTEGRITY_FAILURE — stored file no longer matches the ledger } }
+  /documents/{documentId}/verify:
+    parameters: [{ $ref: '#/components/parameters/DocumentId' }]
+    post:
+      tags: [Documents]
+      security: [{ bearer: [] }]
+      summary: Check a file you hold against the ledger hash (no write)
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } } } } }
+      responses: { '200': { description: '{ match, status, version, latestDocumentId, sha256 }' } }
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      security: [{ bearer: [] }]
+      summary: My notifications (meta.unread = unread count)
+      parameters:
+        - { name: unread, in: query, schema: { type: string, enum: ['true', 'false'] } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { '200': { description: OK } }
+  /notifications/read-all:
+    post: { tags: [Notifications], security: [{ bearer: [] }], summary: Mark all as read, responses: { '200': { description: OK } } }
+  /notifications/{id}/read:
+    post:
+      tags: [Notifications]
+      security: [{ bearer: [] }]
+      summary: Mark one as read
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } }
+  /notifications/{id}:
+    delete:
+      tags: [Notifications]
+      security: [{ bearer: [] }]
+      summary: Delete one
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OK } }
+  /devices:
+    post:
+      tags: [Notifications]
+      security: [{ bearer: [] }]
+      summary: Register / refresh this device's FCM token
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [token, platform], properties: { token: { type: string }, platform: { type: string, enum: [android, ios, web] } } } } } }
+      responses: { '200': { description: OK } }
+  /devices/{token}:
+    delete:
+      tags: [Notifications]
+      security: [{ bearer: [] }]
+      summary: Remove this device's token (on sign-out)
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OK } }

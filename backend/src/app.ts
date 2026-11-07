@@ -14,7 +14,11 @@ import { logger } from './core/logger';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
 import { ledgerRouter } from './modules/ledger/ledger.routes';
+import { documentRouter } from './modules/documents/document.routes';
+import { deviceRouter, notificationRouter } from './modules/notifications/notification.routes';
 import { parcelRouter } from './modules/parcels/parcel.routes';
+import { transferRouter } from './modules/transfers/transfer.routes';
+import { userRouter } from './modules/users/user.routes';
 
 const OPENAPI_PATH = path.resolve(__dirname, '../../docs/openapi.yaml');
 
@@ -45,7 +49,7 @@ export function createApp(): Express {
     }),
   );
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGINS, credentials: true, exposedHeaders: ['X-Request-Id', 'Idempotent-Replayed'] }));
+  app.use(cors({ origin: env.CORS_ORIGINS, credentials: true, exposedHeaders: ['X-Request-Id', 'Idempotent-Replayed', 'X-Content-SHA256', 'X-Ledger-Verified', 'X-Document-Status', 'Content-Disposition'] }));
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
@@ -54,6 +58,11 @@ export function createApp(): Express {
   api.use('/auth', authRouter);
   api.use('/parcels', parcelRouter);
   api.use('/ledger', ledgerRouter);
+  api.use('/transfers', transferRouter);
+  api.use('/documents', documentRouter);
+  api.use('/notifications', notificationRouter);
+  api.use('/devices', deviceRouter);
+  api.use('/users', userRouter);
   app.use('/api/v1', api);
 
   const spec = loadOpenApi();

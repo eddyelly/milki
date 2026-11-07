@@ -3,18 +3,11 @@ import type { AuthUser } from '../../core/auth';
 import { piiHash } from '../../core/crypto';
 import { badRequest, forbidden, notFound } from '../../core/errors';
 import { ledger, type SubmitResult } from '../../core/fabric/ledger';
-import type { WalletUser } from '../../core/fabric/wallet';
 import { User } from '../users/user.model';
+import { toWalletUser as walletUser } from '../users/user.service';
 import { ParcelCache, type ParcelCacheAttrs } from './parcel-cache.model';
 import type { ListQuery, RegisterParcelBody, UpdateParcelBody } from './parcel.schema';
 import type { LedgerHistoryEntry, LedgerParcel } from './parcel.types';
-
-/** The wallet needs the bank code for bank officers; everyone else submits with userId + role. */
-async function walletUser(user: AuthUser): Promise<WalletUser> {
-  if (user.role !== 'BANK_OFFICER') return user;
-  const doc = await User.findOne({ userId: user.userId }, { bankCode: 1 }).lean();
-  return { ...user, bankCode: doc?.bankCode };
-}
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

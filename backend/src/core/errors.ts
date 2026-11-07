@@ -40,6 +40,7 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next)
   if (err instanceof AppError) appErr = err;
   else if (err instanceof ZodError) appErr = zodToAppError(err);
   else if (isBodyParserError(err)) appErr = badRequest('The request body is not valid JSON.', undefined, 'INVALID_JSON');
+  else if (isMulterError(err)) appErr = multerToAppError(err);
   else {
     (req.log ?? logger).error({ err }, 'unhandled error');
     appErr = new AppError(500, 'INTERNAL_ERROR', 'Something went wrong on our side. Please try again.');
@@ -52,4 +53,20 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next)
 
 function isBodyParserError(err: unknown): boolean {
   return typeof err === 'object' && err !== null && (err as { type?: string }).type === 'entity.parse.failed';
+}
+
+interface MulterLike {
+  name: string;
+  code: string;
+  field?: string;
+}
+
+function isMulterError(err: unknown): err is MulterLike {
+  return typeof err === 'object' && err !== null && (err as { name?: string }).name === 'MulterError';
+}
+
+function multerToAppError(err: MulterLike): AppError {
+  if (err.code === 'LIMIT_FILE_SIZE') return new AppError(413, 'FILE_TOO_LARGE', 'The file is too large. The limit is 10 MB.');
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') return badRequest(`Unexpected file field "${err.field ?? ''}". Send the file as "file".`, undefined, 'UNEXPECTED_FILE');
+  return badRequest('The upload could not be read.', { reason: err.code }, 'UPLOAD_FAILED');
 }

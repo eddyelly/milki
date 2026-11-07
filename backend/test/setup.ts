@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
 
-import { outbox } from './outbox';
+import { objects, outbox } from './outbox';
 
 vi.mock('../src/core/notify', async () => {
   const { outbox: box } = await import('./outbox');
@@ -33,6 +33,25 @@ vi.mock('../src/core/fabric/wallet', () => ({
   forgetIdentity: vi.fn(async () => undefined),
 }));
 
+/** MinIO replaced by an in-memory bucket. */
+vi.mock('../src/core/storage', async () => {
+  const { objects } = await import('./outbox');
+  return {
+    ensureBucket: async () => undefined,
+    putObject: vi.fn(async (key: string, data: Buffer) => {
+      objects.set(key, Buffer.from(data));
+    }),
+    getObjectBuffer: vi.fn(async (key: string) => {
+      const o = objects.get(key);
+      if (!o) throw new Error('NoSuchKey');
+      return o;
+    }),
+    removeObject: vi.fn(async (key: string) => {
+      objects.delete(key);
+    }),
+  };
+});
+
 const { connectDatastores, disconnectDatastores, redis } = await import('../src/core/datastores');
 
 beforeAll(async () => {
@@ -41,6 +60,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   outbox.length = 0;
+  objects.clear();
   vi.clearAllMocks();
   const db = mongoose.connection.db;
   if (db) await Promise.all((await db.collections()).map((c) => c.deleteMany({})));

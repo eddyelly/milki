@@ -268,7 +268,8 @@ describe('reads', () => {
       ['documents', 'GetDocuments'],
     ]) {
       const res = await api().get(`/api/v1/parcels/DSM-KIN-12-45/${path}`).set('Authorization', `Bearer ${officer.token}`);
-      expect(res.body.data).toEqual([{ fn }]);
+      // Documents are enriched with file metadata from Mongo (none stored here).
+      expect(res.body.data).toEqual(path === 'documents' ? [{ fn, file: null }] : [{ fn }]);
     }
   });
 

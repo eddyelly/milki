@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../../core/auth';
 import { validate } from '../../core/http';
-import { authLimiter } from '../../core/rate-limit';
+import { authLimiter, reauthLimiter } from '../../core/rate-limit';
 import * as c from './auth.controller';
 import { loginSchema, otpSchema, reauthSchema, refreshSchema, registerSchema, resendSchema } from './auth.schema';
 
@@ -14,5 +14,5 @@ authRouter.post('/otp/resend', authLimiter, validate({ body: resendSchema }), c.
 authRouter.post('/refresh', validate({ body: refreshSchema }), c.refresh);
 authRouter.post('/logout', validate({ body: refreshSchema }), c.logout);
 authRouter.get('/me', requireAuth, c.me);
-authRouter.post('/reauth/otp', requireAuth, authLimiter, c.reauthOtp);
-authRouter.post('/reauth', requireAuth, authLimiter, validate({ body: reauthSchema }), c.reauth);
+authRouter.post('/reauth/otp', requireAuth, reauthLimiter, c.reauthOtp);
+authRouter.post('/reauth', requireAuth, reauthLimiter, validate({ body: reauthSchema }), c.reauth);

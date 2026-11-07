@@ -9,18 +9,20 @@ import { logger } from './core/logger';
 import { startEmailWorker, stopEmailWorker } from './core/notify';
 import { attachSocket, closeSocket } from './core/socket';
 import { ensureBucket } from './core/storage';
-import { registerParcelListener } from './modules/parcels/parcel.listener';
+import { registerLedgerListeners } from './modules/ledger/ledger.listeners';
+import { startNotificationWorker, stopNotificationWorker } from './modules/notifications/notification.service';
 
 async function main(): Promise<void> {
   await connectDatastores();
   await ensureBucket().catch((err: Error) => logger.warn({ err: err.message }, 'MinIO not reachable; uploads will fail until it is'));
   startEmailWorker();
+  startNotificationWorker();
 
   if (env.FABRIC_ENABLED) {
     initGatewayPool();
     try {
       await serviceIdentity('org1');
-      registerParcelListener();
+      registerLedgerListeners();
       startEventListener();
     } catch (err) {
       logger.error({ err: (err as Error).message }, 'Fabric not reachable at startup — ledger endpoints will return 503 until it is');
@@ -37,6 +39,7 @@ async function main(): Promise<void> {
     server.close();
     await closeSocket();
     await stopEmailWorker();
+    await stopNotificationWorker();
     closeGatewayPool();
     await disconnectDatastores();
     process.exit(0);

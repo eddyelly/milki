@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
-import { userIdentity } from '../../core/fabric/wallet';
+import type { AuthUser } from '../../core/auth';
+import { userIdentity, type WalletUser } from '../../core/fabric/wallet';
 import { logger } from '../../core/logger';
 import { ROLE_ORG, ORG_MSP } from '../../core/roles';
 import { User, type UserDoc } from './user.model';
@@ -35,3 +36,17 @@ export async function ensureLedgerIdentity(user: UserDoc): Promise<boolean> {
     return false;
   }
 }
+
+/** The wallet needs the bank code for bank officers; everyone else submits with userId + role. */
+export async function toWalletUser(user: AuthUser): Promise<WalletUser> {
+  if (user.role !== 'BANK_OFFICER') return user;
+  const doc = await User.findOne({ userId: user.userId }, { bankCode: 1 }).lean();
+  return { ...user, bankCode: doc?.bankCode };
+}
+
+/** "Juma Hassan" → "Juma H." — enough for a seller to confirm the right buyer without exposing full details. */
+export const displayName = (fullName: string): string => {
+  const [first, ...rest] = fullName.trim().split(/\s+/);
+  const last = rest.at(-1);
+  return last ? `${first} ${last[0]}.` : (first ?? '');
+};

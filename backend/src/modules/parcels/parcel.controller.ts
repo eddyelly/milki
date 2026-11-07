@@ -3,6 +3,7 @@ import { currentUser } from '../../core/auth';
 import { input, ok, pageMeta, submitted } from '../../core/http';
 import { audit } from '../audit/audit.model';
 import type { ListQuery, RegisterParcelBody, UpdateParcelBody } from './parcel.schema';
+import { listForTarget } from '../documents/document.service';
 import * as svc from './parcel.service';
 
 const pid = (req: Request) => input<{ parcelId: string }>(req, 'params').parcelId;
@@ -23,6 +24,12 @@ export async function history(req: Request, res: Response) {
 
 export const related = (kind: 'encumbrances' | 'disputes' | 'transfers' | 'documents') => async (req: Request, res: Response) =>
   ok(res, await svc.related(currentUser(req), pid(req), kind), { source: 'ledger' });
+
+/** Ledger document references, enriched with file metadata; same visibility as the parcel. */
+export async function documents(req: Request, res: Response) {
+  await svc.get(currentUser(req), pid(req));
+  return ok(res, await listForTarget(currentUser(req), 'PARCEL', pid(req)), { source: 'ledger' });
+}
 
 export async function register(req: Request, res: Response) {
   const body = input<RegisterParcelBody>(req, 'body');

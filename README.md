@@ -62,7 +62,7 @@ Sign-in sends a 6-digit code by "SMS"; in dev it lands in Mailpit at http://loca
 - [x] 2. Fabric network
 - [x] 3. Chaincode
 - [x] 4. Backend core
-- [ ] 5. Transfers and documents
+- [x] 5. Transfers and documents
 - [ ] 6. Web portal
 - [ ] 7. Mobile app
 - [ ] 8. Support

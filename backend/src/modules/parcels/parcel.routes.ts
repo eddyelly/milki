@@ -15,7 +15,7 @@ parcelRouter.get('/:parcelId/history', validate({ params: parcelParams }), c.his
 parcelRouter.get('/:parcelId/encumbrances', validate({ params: parcelParams }), c.related('encumbrances'));
 parcelRouter.get('/:parcelId/disputes', validate({ params: parcelParams }), c.related('disputes'));
 parcelRouter.get('/:parcelId/transfers', validate({ params: parcelParams }), c.related('transfers'));
-parcelRouter.get('/:parcelId/documents', validate({ params: parcelParams }), c.related('documents'));
+parcelRouter.get('/:parcelId/documents', validate({ params: parcelParams }), c.documents);
 
 // Ledger writes: REGISTRAR, T3 re-authentication, Idempotency-Key (CLAUDE.md §8). Respond 202 { txId }.
 // Order matters: a replay of a completed request is answered before the single-use re-auth token is checked.
