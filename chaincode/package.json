@@ -1,0 +1,34 @@
+{
+  "name": "land-registry",
+  "version": "0.1.0",
+  "description": "Milki land-registry chaincode (Hyperledger Fabric 2.5, TypeScript)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "fabric-chaincode-node start",
+    "pretest": "tsc -p tsconfig.json",
+    "test": "mocha --recursive \".build/test/**/*.test.js\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fabric-contract-api": "^2.5.8",
+    "fabric-shim": "^2.5.8"
+  },
+  "devDependencies": {
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.6.6",
+    "@types/sinon": "^22.0.2",
+    "chai": "^6.3.0",
+    "mocha": "^12.0.3",
+    "sinon": "^22.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  },
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "private": true
+}

@@ -24,10 +24,21 @@ MongoDB `localhost:27117`, Redis `localhost:6390`, MinIO API `localhost:9100`, S
 
 Stop with `docker compose -f infra/docker-compose.yml down` (add `-v` to wipe data).
 
+## Fabric network (Phase 2)
+
+```bash
+./network/scripts/up.sh                      # Org1 Ministry, Org2 Land Office, Org3 Banks + land-channel + chaincode
+./network/scripts/deploy-cc.sh -ccv 1.2 -ccs 3   # upgrade chaincode
+./network/scripts/enroll.sh registrar1 REGISTRAR # CA identity with role attribute
+./network/scripts/down.sh
+```
+
+Requires Fabric 2.5.15+ on Docker Engine 29+ (pinned to 2.5.16).
+
 ## Build progress
 
 - [x] 1. Infra
-- [ ] 2. Fabric network
+- [x] 2. Fabric network
 - [ ] 3. Chaincode
 - [ ] 4. Backend core
 - [ ] 5. Transfers and documents

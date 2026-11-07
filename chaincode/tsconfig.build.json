@@ -1,0 +1,12 @@
+{
+  // Production build: only src/ is compiled into dist/ and packaged by the peer.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"],
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -88,7 +88,7 @@ mkdir infra docs
 mkdir network && cd network
 curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh
 chmod +x install-fabric.sh
-./install-fabric.sh --fabric-version 2.5.14 docker samples binary   # pin latest 2.5.x LTS
+./install-fabric.sh --fabric-version 2.5.16 docker samples binary   # pin latest 2.5.x LTS (≥2.5.15 required for Docker Engine 29+)
 cd fabric-samples/test-network
 ./network.sh up createChannel -c land-channel -ca -s couchdb
 cd addOrg3 && ./addOrg3.sh up -c land-channel -ca -s couchdb && cd ..
@@ -98,6 +98,17 @@ Then write `network/scripts/deploy-cc.sh`. It must:
 2. Install and approve the chaincode for **Org3** using the peer CLI, because `deployCC` only handles Org1 and Org2.
 3. Accept an incrementing `-ccv` and `-ccs` for upgrades.
 
+**Network decisions (Phase 2):**
+- Fabric **2.5.16**. Peers older than 2.5.15 cannot build chaincode on Docker Engine 29+ (they fail with "write: broken pipe").
+- `network/scripts/`:
+  - `env.sh` holds the shared version, channel and chaincode settings.
+  - `up.sh` installs Fabric, brings up Org1–Org3 and `land-channel`, then deploys the chaincode.
+  - `down.sh` tears the network down.
+  - `deploy-cc.sh [-ccv X -ccs N]` deploys or upgrades for all 3 orgs. It ends with a smoke test whose transaction is endorsed by Org1 + Org3.
+  - `enroll.sh <user> <ROLE>` registers a CA identity with `role=<ROLE>:ecert`.
+  - `pull-images.sh` is the Docker Hub fallback when ghcr.io is unreachable.
+- `transferPrivate` uses `requiredPeerCount: 0`, `maxPeerCount: 1`, `memberOnlyRead/Write: true` and `blockToLive: 0` (kept forever).
+
 ### 4.2 Chaincode
 ```bash
 mkdir chaincode && cd chaincode
@@ -106,6 +117,7 @@ npm i fabric-contract-api fabric-shim
 npm i -D typescript @types/node mocha chai sinon @types/mocha @types/chai @types/sinon ts-node
 npx tsc --init
 ```
+`npm i -D typescript` currently installs TypeScript 7, the native compiler. It has no JS API, so `ts-node` cannot run the tests. Tests are compiled with `tsc -p tsconfig.json` into `.build/` and run with mocha (`npm test`). The production build (`tsconfig.build.json`) compiles only `src/` into `dist/`. Fabric's legacy decorators (`experimentalDecorators` + `emitDecoratorMetadata`) work under TS 7.
 
 ### 4.3 Backend
 ```bash

@@ -32,3 +32,4 @@ mobile/ios/Runner/GoogleService-Info.plist
 .vscode/*
 !.vscode/extensions.json
 *.log
+network/identities/
