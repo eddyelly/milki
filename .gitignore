@@ -1,0 +1,34 @@
+# Dependencies & builds
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Env & secrets — never commit real values (CLAUDE.md §6)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+wallet/
+
+# Fabric: downloaded by install-fabric.sh, not ours to version
+network/fabric-samples/
+network/install-fabric.sh
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+mobile/android/app/google-services.json
+mobile/ios/Runner/GoogleService-Info.plist
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log

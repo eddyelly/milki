@@ -1,0 +1,111 @@
+# Milki local infrastructure (CLAUDE.md §5).
+# Ports are fixed — never change the host side of a mapping.
+# Fabric ports (7050-7054, 8054, 9051, 9443, 11051, 11054, 5984, 7984, 9984) are reserved; nothing here binds them.
+name: milki
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  mongo:
+    <<: *restart
+    image: mongo:8.0
+    container_name: milki-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-milki}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-milki_dev}
+      MONGO_INITDB_DATABASE: milki
+    ports:
+      - "27117:27017"
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo-express:
+    <<: *restart
+    image: mongo-express:1.0.2
+    container_name: milki-mongo-express
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER:-milki}:${MONGO_ROOT_PASSWORD:-milki_dev}@mongo:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: ${ME_USER:-milki}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${ME_PASSWORD:-milki_dev}
+    ports:
+      - "8181:8081"
+
+  redis:
+    <<: *restart
+    image: redis:7.4-alpine
+    container_name: milki-redis
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-milki_dev}", "--appendonly", "yes"]
+    ports:
+      - "6390:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-milki_dev}", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redisinsight:
+    <<: *restart
+    image: redis/redisinsight:2.70
+    container_name: milki-redisinsight
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      RI_REDIS_HOST: redis
+      RI_REDIS_PORT: "6379"
+      RI_REDIS_PASSWORD: ${REDIS_PASSWORD:-milki_dev}
+      RI_REDIS_ALIAS: milki
+    ports:
+      - "5541:5540"
+    volumes:
+      - redisinsight-data:/data
+
+  minio:
+    <<: *restart
+    # Upstream minio/minio images were withdrawn from Docker Hub in 2025; pgsty/minio is the maintained community build.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: milki-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-milki}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-milki_dev_secret}
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    volumes:
+      - minio-data:/data
+
+  mailpit:
+    <<: *restart
+    image: axllent/mailpit:v1.27
+    container_name: milki-mailpit
+    environment:
+      MP_MAX_MESSAGES: "5000"
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "1126:1025"
+      - "8126:8025"
+    volumes:
+      - mailpit-data:/data
+
+volumes:
+  mongo-data:
+  mongo-config:
+  redis-data:
+  redisinsight-data:
+  minio-data:
+  mailpit-data:
