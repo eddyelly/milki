@@ -32,6 +32,9 @@ CC_SRC_PATH="../../../chaincode"                       # relative to test-networ
 CC_COLL_CONFIG="../../../chaincode/collections_config.json"
 CC_END_POLICY="AND('Org1MSP.peer',OR('Org2MSP.peer','Org3MSP.peer'))"
 
+# Keep local test/coverage output out of the chaincode package.
+rm -rf "$TEST_NETWORK_HOME/$CC_SRC_PATH/.build" "$TEST_NETWORK_HOME/$CC_SRC_PATH/coverage"
+
 cd "$TEST_NETWORK_HOME"
 
 # ---------------------------------------------------------------------------

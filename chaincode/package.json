@@ -8,7 +8,8 @@
     "start": "fabric-chaincode-node start",
     "pretest": "tsc -p tsconfig.json",
     "test": "mocha --recursive \".build/test/**/*.test.js\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "coverage": "npm run pretest && c8 --all --src src --include 'src/**' --include '.build/src/**' --exclude 'src/index.ts' --exclude '.build/src/index.js' --check-coverage --branches 90 --lines 95 --reporter=text --reporter=text-summary mocha --recursive '.build/test/**/*.test.js'"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -20,6 +21,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^26.6.6",
     "@types/sinon": "^22.0.2",
+    "c8": "^12.0.0",
     "chai": "^6.3.0",
     "mocha": "^12.0.3",
     "sinon": "^22.1.0",

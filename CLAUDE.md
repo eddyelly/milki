@@ -266,6 +266,34 @@ On-chain entities never use a hard delete; "Delete" is always a status transitio
 
 **Event:** every function emits a `milki.<Entity>.<Action>` event.
 
+**Chaincode decisions (Phase 3):**
+- **Layout:** `chaincode/src/services/<entity>.service.ts` holds the logic. `landRegistry.contract.ts` is a thin wrapper.
+- **Errors:** every error message is JSON `{ code, message, details? }`. The backend maps it to the error envelope and shows `message` to users.
+  - Codes: `INVALID_ARGUMENT`, `NOT_FOUND`, `FORBIDDEN`, `CONFLICT`, `INVALID_STATE`, `PARCEL_ENCUMBERED`, `PARCEL_DISPUTED`, `PARCEL_FROZEN`, `PARCEL_RETIRED`, `TRANSFER_IN_PROGRESS`.
+- **Identity:**
+  - The caller's ID is the certificate CN (the CA enrollment ID, which equals the Milki user ID).
+  - The `role` attribute must match the issuing MSP (§2). Identities without a role can only read.
+  - `BANK_OFFICER` also needs a `bank` attribute (e.g. `CRDB`), because all banks share Org3MSP. Only that bank may update or release its encumbrance.
+- **Parcel status is derived, never set:** `RETIRED > FROZEN > DISPUTED > ENCUMBERED > PENDING_TRANSFER > ACTIVE`. It is computed from `retired`, `frozen`, `openDisputeIds`, `activeEncumbranceIds` and `activeTransferId`.
+- **IDs:** `TRF-`, `ENC-`, `DSP-` and `DOC-` followed by the first 16 hex characters of the txId, so every endorser derives the same ID. Keys are `PARCEL_<id>`, `TRANSFER_<id>`, and so on, plus a `TITLE_<titleNumber>` uniqueness index. JSON is written with sorted keys.
+- **Transfer roles:**
+  - `ConfirmPayments` is done by a `LAND_OFFICER`, against receipts (TRA and payments are mocked).
+  - `ApproveTransfer` (`REGISTRAR`) records APPROVED and COMPLETED in the same transaction and moves ownership. It emits `milki.Transfer.Approved`.
+  - `RejectTransfer`: an officer can reject until verification; after verification only a registrar can.
+  - Every forward step re-checks the parcel guards and that the seller still owns the parcel (`ownershipVersion`).
+- **Private sale details** go in the transient map under key `transfer`, as `{salePrice, currency, sellerNidaRef, buyerNidaRef, sellerContactHash, buyerContactHash}`. They are stored in `transferPrivate` and read with `GetTransferPrivateDetails` (parties and officials only).
+- **Encumbrances** cannot be added while the parcel is frozen, retired, disputed or has a transfer in progress.
+- **Disputes:** a `LAND_OFFICER` flags them. A `LAND_OFFICER` or `REGISTRAR` adds notes and resolves them.
+- **Documents:**
+  - Who may attach: the owner, a registrar or a land officer (parcel); the parties or officials while a transfer is open; a bank only a `MORTGAGE_DEED`, and only where it holds an active encumbrance.
+  - A duplicate hash on the same target is refused.
+- **Extra read functions:** `GetContractInfo`, `GetParcelTransfers`, `GetEncumbrance`, `GetDocuments`, `VerifyDocument` (hash match for QR verify), `GetTransferPrivateDetails`.
+- **Indexes:** CouchDB indexes live in `chaincode/META-INF/statedb/couchdb/indexes`.
+- **Tests:**
+  - `npm test` (mocha + sinon) runs against an in-memory peer (`test/support/fake-ledger.ts`) with buffered, atomic commits.
+  - `npm run coverage` enforces ≥90% branch coverage.
+  - `network/scripts/smoke-flow.sh` runs the end-to-end flow on the live network.
+
 ### 7.2 Off-chain (MongoDB)
 | Entity | C | R | U | D |
 |---|---|---|---|---|

@@ -35,11 +35,19 @@ Stop with `docker compose -f infra/docker-compose.yml down` (add `-v` to wipe da
 
 Requires Fabric 2.5.15+ on Docker Engine 29+ (pinned to 2.5.16).
 
+## Chaincode (Phase 3)
+
+```bash
+cd chaincode && npm test            # 122 unit tests (mocha + sinon, in-memory peer)
+npm run coverage                     # enforces ≥90% branch coverage
+./network/scripts/smoke-flow.sh      # end-to-end transfer on the live network
+```
+
 ## Build progress
 
 - [x] 1. Infra
 - [x] 2. Fabric network
-- [ ] 3. Chaincode
+- [x] 3. Chaincode
 - [ ] 4. Backend core
 - [ ] 5. Transfers and documents
 - [ ] 6. Web portal
