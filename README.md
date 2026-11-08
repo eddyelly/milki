@@ -91,6 +91,21 @@ Sign in as `citizen@milki.dev` (or `buyer@milki.dev`) / `Milki@2026`; the SMS co
 
 `npm run seed` (backend) adds the help-centre articles, canned responses and three demo tickets.
 
+## Admin and partner API (Phase 9)
+
+- **Admin (`admin@milki.dev`):** *Users* (create staff with a one-time password, change roles, deactivate), *Land offices*, *API clients* (keys shown once, rotate, revoke) and the read-only *Audit log*.
+- **Banks (`bank@milki.dev`):** open a parcel → *Add mortgage / charge* (T3), update or release it from the *Mortgages* tab; *Encumbrances* lists the bank's book.
+- **Bank systems:** create an API client, then call the partner API with the key:
+
+```bash
+curl -H "x-api-key: $MILKI_KEY" http://localhost:4100/api/v1/partner/parcels/DSM-KIN-12-45
+```
+
+```bash
+curl -X POST -H "x-api-key: $MILKI_KEY" -H "content-type: application/json" \
+  -d '{"nida":"19900101123450000101"}' http://localhost:4100/api/v1/partner/parcels/DSM-KIN-12-45/verify-owner
+```
+
 ## Build progress
 
 - [x] 1. Infra
@@ -101,5 +116,5 @@ Sign in as `citizen@milki.dev` (or `buyer@milki.dev`) / `Milki@2026`; the SMS co
 - [x] 6. Web portal
 - [x] 7. Mobile app
 - [x] 8. Support
-- [ ] 9. Admin and partner API
+- [x] 9. Admin and partner API
 - [ ] 10. Hardening

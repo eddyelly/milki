@@ -13,7 +13,11 @@ import { errorHandler, notFoundHandler } from './core/errors';
 import { logger } from './core/logger';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
+import { encumbranceRouter, parcelEncumbranceRouter } from './modules/encumbrances/encumbrance.routes';
 import { kbRouter } from './modules/kb/kb.routes';
+import { adminRouter, officeRouter } from './modules/admin/admin.routes';
+import { apiClientRouter } from './modules/partner/api-client.routes';
+import { partnerRouter } from './modules/partner/partner.routes';
 import { supportRouter, ticketRouter } from './modules/support/support.routes';
 import { ledgerRouter } from './modules/ledger/ledger.routes';
 import { disputeRouter, parcelDisputeRouter } from './modules/disputes/dispute.routes';
@@ -62,6 +66,7 @@ export function createApp(): Express {
   api.use('/health', healthRouter);
   api.use('/auth', authRouter);
   api.use('/parcels', parcelDisputeRouter);
+  api.use('/parcels', parcelEncumbranceRouter);
   api.use('/parcels', parcelRouter);
   api.use('/disputes', disputeRouter);
   api.use('/stats', statsRouter);
@@ -72,9 +77,14 @@ export function createApp(): Express {
   api.use('/devices', deviceRouter);
   api.use('/users', userRouter);
   api.use('/verify', verifyRouter);
+  api.use('/encumbrances', encumbranceRouter);
   api.use('/kb', kbRouter);
   api.use('/tickets', ticketRouter);
   api.use('/support', supportRouter);
+  api.use('/offices', officeRouter);
+  api.use('/admin/api-clients', apiClientRouter);
+  api.use('/admin', adminRouter);
+  api.use('/partner', partnerRouter);
   app.use('/api/v1', api);
 
   const spec = loadOpenApi();

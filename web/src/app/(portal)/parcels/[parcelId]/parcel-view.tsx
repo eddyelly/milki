@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { use, useState } from 'react';
 import { ConfirmAction } from '@/components/confirm-action';
+import { AddEncumbrance, ReleaseEncumbrance, UpdateEncumbrance } from '@/components/encumbrance-actions';
 import { CopyButton } from '@/components/copy-button';
 import { DocumentList } from '@/components/document-list';
 import { OwnershipChain } from '@/components/ownership-chain';
@@ -103,6 +104,7 @@ function ParcelView({ p }: { p: Parcel }) {
         actions={
           <>
             {hasRole('LAND_OFFICER') && !a.retired && <FlagDispute p={a} lock={lock} />}
+            {hasRole('BANK_OFFICER') && !a.retired && <AddEncumbrance p={a} lock={lock} />}
             {hasRole('REGISTRAR') && !a.retired && (
               <>
                 <EditParcel p={a} lock={lock} />
@@ -474,12 +476,15 @@ function HistoryTab({ parcelId }: { parcelId: string }) {
 
 function EncumbrancesTab({ parcelId }: { parcelId: string }) {
   const q = useParcelEncumbrances(parcelId);
+  const { user } = useAuth();
+  // Render from a snapshot while a dialog is open: a committed release must not unmount its own dialog mid-seal.
+  const [list, lock] = useSnapshotWhileOpen(q.data);
   if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
-  if (!q.data) return <TabLoading />;
-  if (!q.data.length) return <EmptyState icon={<Landmark className="size-6" />} title="No mortgages or charges" description="Banks register encumbrances through the partner API or the portal." />;
+  if (!list) return <TabLoading />;
+  if (!list.length) return <EmptyState icon={<Landmark className="size-6" />} title="No mortgages or charges" description="Banks register encumbrances through the partner API or the portal." />;
   return (
     <ul className="space-y-3">
-      {q.data.map((e) => (
+      {list.map((e) => (
         <li key={e.encumbranceId} className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
           <span className="grid size-10 place-items-center rounded-lg bg-info/10 text-info">
             <Landmark className="size-5" aria-hidden />
@@ -493,6 +498,13 @@ function EncumbrancesTab({ parcelId }: { parcelId: string }) {
             </p>
           </div>
           <Badge variant={e.status === 'ACTIVE' ? 'default' : 'secondary'}>{e.status === 'ACTIVE' ? 'Active' : `Released ${fmtDate(e.releasedAt)}`}</Badge>
+          {/* Only the lending bank may change or release it (enforced by the chaincode too). */}
+          {user?.role === 'BANK_OFFICER' && e.status === 'ACTIVE' && e.lenderCode === user.bankCode && (
+            <div className="flex w-full justify-end gap-2 sm:w-auto">
+              <UpdateEncumbrance e={e} lock={lock} />
+              <ReleaseEncumbrance e={e} parcelId={parcelId} lock={lock} />
+            </div>
+          )}
         </li>
       ))}
     </ul>

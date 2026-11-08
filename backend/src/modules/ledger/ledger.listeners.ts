@@ -1,5 +1,6 @@
 import { redis } from '../../core/datastores';
 import { type EventContext, type MilkiEvent, onLedgerEvent } from '../../core/fabric/events';
+import { syncEncumbrance } from '../encumbrances/encumbrance.service';
 import { ledger } from '../../core/fabric/ledger';
 import { emitToRole, emitToUser } from '../../core/socket';
 import { AuditLog } from '../audit/audit.model';
@@ -161,6 +162,7 @@ export function registerLedgerListeners(): void {
   registerParcelListener();
   onLedgerEvent(async (e, ctx) => {
     if (e.entity === 'Transfer') await syncTransfer(e.id, ctx.blockNumber);
+    if (e.entity === 'Encumbrance') await syncEncumbrance(e.id, ctx.blockNumber);
   });
   onLedgerEvent(async (e) => {
     if (e.entity !== 'Document') return;

@@ -683,6 +683,40 @@ Do not animate data tables or anything a user reads repeatedly in long sessions.
 - **Rate limits:** `/auth/reauth*` has its own per-user limiter (30/min). The per-IP `authLimiter` covers sign-in, registration and OTP.
 - **The `ledger-events` queue is not used.** Handlers run in the listener with a Mongo checkpoint, which gives at-least-once delivery. Handlers are idempotent.
 
+**Backend decisions (Phase 9):**
+- **Encumbrances** (`/encumbrances`, `POST /parcels/:id/encumbrances`):
+  - `BANK_OFFICER` writes are T3: add (type, amount, currency, the bank's own loan `reference`, optional `termsHash`), update, and release with a reason.
+  - `lenderName` comes from the officer's account, never from the request body.
+  - The chaincode enforces that only the lending bank (certificate attribute `bank`) may change one.
+  - Lists come from `encumbrance_cache`, which the listener fills on `milki.Encumbrance.*`: banks see only their own `lenderCode`, registry staff see all. Single reads come from the ledger.
+- **Admin** (`/admin/*`, SYSTEM_ADMIN only):
+  - **Users:** create staff only (landowners self-register). The admin gets a one-time password, shown once and emailed; the ledger identity is enrolled in the background.
+  - Role or bank changes drop the wallet entry and re-enrol, because the certificate carries `role` / `bank`. Landowner ⇄ staff conversions and changing your own role are refused.
+  - Deactivate (soft) stops sign-in, refresh and re-auth, and removes device credentials and push tokens. Access tokens already issued expire within 15 minutes.
+  - **Land offices** (`land_offices`, soft delete; refused while active staff belong to one); staff read them via `GET /offices`.
+  - **Audit log** is read-only (`GET /admin/audit`). No endpoint can change or delete entries.
+- **API clients** (`/admin/api-clients`):
+  - Key format `mlk_<8-hex prefix>_<secret>`. Only its SHA-256 is stored, and the prefix is used for lookup.
+  - The key is returned only by create and rotate. Scopes are `parcels:verify` and `encumbrances:write`; `rateLimitPerMin` is per client. Revoke is permanent.
+- **Partner API** (`/partner`, header `x-api-key`):
+  - Per-client Redis rate limit (429 `RATE_LIMITED`).
+  - Every call is audited as `partner.<method>.<route>`, including rejected keys (`partner.denied`). Request bodies are never audited, because they may hold a NIDA number.
+  - Reads come straight from the ledger: parcel facts and active encumbrances, with amounts shown only for the caller's own bank. No owner identity is returned.
+  - `POST /partner/parcels/:id/verify-owner {nida}` answers `ownerMatches` by comparing the salted hash with the ledger's `ownerNidaHash`.
+  - Writes are signed by a **per-client bank identity** `api_<clientId>` (role `BANK_OFFICER`, `bank=<code>`), enrolled on Org3 on first use. Machine clients have no T3 re-auth; the API key, scopes, `Idempotency-Key` and audit replace it.
+  - `GET /partner/tx/:txId` lets a client poll the commit status of its own submissions.
+- **Overview stats** also return `support.{unassigned, openTickets, openEscalations}`.
+
+**Web decisions (Phase 9):**
+- **Admin pages:** `/admin/users`, `/admin/offices`, `/admin/api-clients` and `/admin/audit` (filters by area, outcome and record; not animated).
+  - Tiers: create and edit are T1; reset password, deactivate, rotate, revoke and delete are T2 (typed email, bank code, `REVOKE` or office code).
+  - One-time passwords and API keys appear in `SecretReveal`, which can't be dismissed until "I have copied and stored it safely" is ticked.
+- **Bank officers:**
+  - "Add mortgage / charge" on the parcel page (T3).
+  - Update (T3) and Release (T3 + typed `ENC-…`) on their own active encumbrances in the Mortgages tab.
+  - `/encumbrances` is the bank's book (registry staff see all banks).
+  - The Mortgages tab renders from `useSnapshotWhileOpen`, so a committed release cannot unmount its own dialog mid-seal.
+
 ---
 
 ## 13. Build phases (do in order; each ends with passing tests and a demo)

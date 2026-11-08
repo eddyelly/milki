@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Milki API
-  version: 0.8.0
+  version: 0.9.0
   description: |
     Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
 
@@ -32,9 +32,13 @@ tags:
   - name: Verify
   - name: Help centre
   - name: Support
+  - name: Encumbrances
+  - name: Admin
+  - name: Partner
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+    apiKey: { type: apiKey, in: header, name: x-api-key, description: 'Bank API key mlk_<prefix>_<secret>, issued by a SYSTEM_ADMIN; stored hashed' }
   parameters:
     IdempotencyKey:
       name: Idempotency-Key
@@ -412,6 +416,77 @@ paths:
     post: { tags: [Support], security: [{ bearer: [] }], summary: 'LAND_OFFICER / REGISTRAR answers with a resolution (added as an internal note)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
   /support/metrics:
     get: { tags: [Support], security: [{ bearer: [] }], summary: 'Open tickets, SLA breaches, average first response / resolution, CSAT trend, tickets by category (days=30)', responses: { '200': { description: OK } } }
+  /parcels/{parcelId}/encumbrances:
+    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Encumbrances of a parcel (ledger), parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    post:
+      tags: [Encumbrances]
+      security: [{ bearer: [] }]
+      summary: 'BANK_OFFICER adds a mortgage/charge/caveat/lien for their bank (T3). Blocks transfers while active.'
+      parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, amount, reference]
+              properties:
+                type: { type: string, enum: [MORTGAGE, CHARGE, CAVEAT, LIEN] }
+                amount: { type: number }
+                currency: { type: string, default: TZS }
+                reference: { type: string, description: "The bank's own loan reference (no borrower PII)" }
+                termsHash: { type: string, description: SHA-256 of the loan terms document }
+      responses: { '202': { description: 'txId, encumbranceId' }, '409': { $ref: '#/components/responses/Error' } }
+  /encumbrances:
+    get: { tags: [Encumbrances], security: [{ bearer: [] }], summary: 'Encumbrance book from the cache. Banks see only their own (lenderCode); registry staff see all.', parameters: [{ name: status, in: query, schema: { type: string, enum: [ACTIVE, RELEASED] } }, { name: q, in: query, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /encumbrances/{encumbranceId}:
+    get: { tags: [Encumbrances], security: [{ bearer: [] }], summary: One encumbrance (ledger), parameters: [{ name: encumbranceId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    patch: { tags: [Encumbrances], security: [{ bearer: [] }], summary: 'Lending bank updates amount, currency, reference or terms hash (T3)', parameters: [{ name: encumbranceId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }], responses: { '202': { description: txId } } }
+  /encumbrances/{encumbranceId}/release:
+    post: { tags: [Encumbrances], security: [{ bearer: [] }], summary: 'Lending bank releases it with a reason (T3 + typed ID in the UI)', parameters: [{ name: encumbranceId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }], responses: { '202': { description: txId } } }
+  /offices:
+    get: { tags: [Admin], security: [{ bearer: [] }], summary: Land offices (staff), responses: { '200': { description: OK } } }
+  /admin/users:
+    get: { tags: [Admin], security: [{ bearer: [] }], summary: 'Users (SYSTEM_ADMIN): q, role, status, officeId, page, limit', responses: { '200': { description: OK } } }
+    post: { tags: [Admin], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Create a staff account (T1). Returns a one-time password (also emailed). Bank officers need bankCode + bankName.', responses: { '201': { description: 'user, temporaryPassword' }, '409': { $ref: '#/components/responses/Error' } } }
+  /admin/users/{userId}:
+    get: { tags: [Admin], security: [{ bearer: [] }], summary: User detail, parameters: [{ name: userId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    patch: { tags: [Admin], security: [{ bearer: [] }], summary: 'Update name, email, office, role or bank (T1). A role/bank change re-enrolls the ledger identity. Landowner ⇄ staff changes are refused.', parameters: [{ name: userId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /admin/users/{userId}/deactivate:
+    post: { tags: [Admin], security: [{ bearer: [] }], summary: 'Deactivate (T2, soft). Sign-in, refresh and re-auth stop; device credentials and push tokens removed. Body: reason', parameters: [{ name: userId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /admin/users/{userId}/reactivate:
+    post: { tags: [Admin], security: [{ bearer: [] }], summary: Reactivate (T1), parameters: [{ name: userId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /admin/users/{userId}/reset-password:
+    post: { tags: [Admin], security: [{ bearer: [] }], summary: 'New one-time password (T2), shown once and emailed', parameters: [{ name: userId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: 'user, temporaryPassword' } } }
+  /admin/offices:
+    post: { tags: [Admin], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Create a land office (T1): code, name, region, district, address, phone, email', responses: { '201': { description: Created } } }
+  /admin/offices/{id}:
+    patch: { tags: [Admin], security: [{ bearer: [] }], summary: Update (T1), parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Admin], security: [{ bearer: [] }], summary: 'Soft delete (T2). 409 OFFICE_HAS_STAFF while active staff belong to it.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /admin/audit:
+    get: { tags: [Admin], security: [{ bearer: [] }], summary: 'Audit log (read-only): action prefix, actor, entityType, entityId, outcome, from, to', responses: { '200': { description: OK } } }
+  /admin/api-clients:
+    get: { tags: [Admin], security: [{ bearer: [] }], summary: 'Bank API clients (keys are never returned, only keyHint)', responses: { '200': { description: OK } } }
+    post: { tags: [Admin], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Create a client (T1): name, bankCode, bankName, scopes, rateLimitPerMin. The apiKey is in this response only.', responses: { '201': { description: 'client, apiKey' } } }
+  /admin/api-clients/{clientId}:
+    patch: { tags: [Admin], security: [{ bearer: [] }], summary: 'Change name, scopes or rate limit (T1)', parameters: [{ name: clientId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /admin/api-clients/{clientId}/rotate:
+    post: { tags: [Admin], security: [{ bearer: [] }], summary: 'New key (T2); the old key stops working immediately. The apiKey is in this response only.', parameters: [{ name: clientId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: 'client, apiKey' } } }
+  /admin/api-clients/{clientId}/revoke:
+    post: { tags: [Admin], security: [{ bearer: [] }], summary: 'Revoke (T2). Body: reason', parameters: [{ name: clientId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /partner/parcels/{parcelId}:
+    get: { tags: [Partner], security: [{ apiKey: [] }], summary: 'Scope parcels:verify. Parcel facts straight from the ledger: status, flags, active encumbrances (amounts only for your own bank). No owner identity.', parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK }, '401': { $ref: '#/components/responses/Error' }, '403': { $ref: '#/components/responses/Error' }, '429': { $ref: '#/components/responses/Error' } } }
+  /partner/parcels/{parcelId}/verify-owner:
+    post: { tags: [Partner], security: [{ apiKey: [] }], summary: 'Scope parcels:verify. Body: nida. Compares the salted hash with the ledger owner hash; answers ownerMatches true/false only.', parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: 'parcelId, ownerMatches, status, ownershipVersion' } } }
+  /partner/encumbrances:
+    get: { tags: [Partner], security: [{ apiKey: [] }], summary: "Scope encumbrances:write. Your bank's encumbrances (cache)", responses: { '200': { description: OK } } }
+  /partner/parcels/{parcelId}/encumbrances:
+    post: { tags: [Partner], security: [{ apiKey: [] }], summary: 'Scope encumbrances:write. Add an encumbrance, signed by your client bank identity. Idempotency-Key required.', parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '202': { description: 'txId, encumbranceId' } } }
+  /partner/encumbrances/{encumbranceId}:
+    patch: { tags: [Partner], security: [{ apiKey: [] }], summary: Scope encumbrances:write. Update your encumbrance, parameters: [{ name: encumbranceId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '202': { description: txId } } }
+  /partner/encumbrances/{encumbranceId}/release:
+    post: { tags: [Partner], security: [{ apiKey: [] }], summary: 'Scope encumbrances:write. Release with a reason', parameters: [{ name: encumbranceId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '202': { description: txId } } }
+  /partner/tx/{txId}:
+    get: { tags: [Partner], security: [{ apiKey: [] }], summary: Commit status of your own submission (SUBMITTED → COMMITTED / FAILED), parameters: [{ name: txId, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /parcels:
     get:
       tags: [Parcels]
@@ -493,9 +568,6 @@ paths:
       security: [{ bearer: [] }]
       summary: Ownership/status history from the ledger (oldest first)
       responses: { '200': { description: OK } }
-  /parcels/{parcelId}/encumbrances:
-    parameters: [{ $ref: '#/components/parameters/ParcelId' }]
-    get: { tags: [Parcels], security: [{ bearer: [] }], summary: Encumbrances (ledger), responses: { '200': { description: OK } } }
   /parcels/{parcelId}/disputes:
     parameters: [{ $ref: '#/components/parameters/ParcelId' }]
     get: { tags: [Parcels], security: [{ bearer: [] }], summary: Disputes (ledger), responses: { '200': { description: OK } } }

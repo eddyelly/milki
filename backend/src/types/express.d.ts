@@ -8,6 +8,8 @@ declare global {
       user?: AuthUser;
       /** Set by validate(). */
       valid?: Validated;
+      /** Set by the partner API-key middleware (CLAUDE.md §12, /api/v1/partner). */
+      partner?: { clientId: string; name: string; bankCode: string; bankName: string; scopes: string[]; rateLimitPerMin: number };
     }
   }
 }
