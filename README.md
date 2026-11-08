@@ -106,6 +106,22 @@ curl -X POST -H "x-api-key: $MILKI_KEY" -H "content-type: application/json" \
   -d '{"nida":"19900101123450000101"}' http://localhost:4100/api/v1/partner/parcels/DSM-KIN-12-45/verify-owner
 ```
 
+## Hardening, demo data and benchmarks (Phase 10)
+
+```bash
+cd backend && npm run seed && npm run seed:demo   # accounts, then 3 regions, 30 parcels, transfers in every state
+```
+
+```bash
+cd web && npm run test:e2e                         # login → approve, and the full transfer flow (live stack)
+```
+
+```bash
+./benchmarks/caliper/run.sh                        # Hyperledger Caliper → benchmarks/caliper/report.html
+```
+
+Latest benchmark: reads ~400 TPS at ~10 ms, writes ~25 TPS under 1 s (saturating at ~35 TPS) on a single 4-vCPU host — see [docs/benchmarks/caliper-results.md](docs/benchmarks/caliper-results.md).
+
 ## Build progress
 
 - [x] 1. Infra
@@ -117,4 +133,4 @@ curl -X POST -H "x-api-key: $MILKI_KEY" -H "content-type: application/json" \
 - [x] 7. Mobile app
 - [x] 8. Support
 - [x] 9. Admin and partner API
-- [ ] 10. Hardening
+- [x] 10. Hardening

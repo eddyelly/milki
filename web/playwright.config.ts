@@ -10,6 +10,8 @@ export default defineConfig({
   timeout: 180_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
+  // Specs share the demo accounts (OTPs are read from Mailpit) and the live ledger: run them one at a time.
+  workers: 1,
   retries: 0,
   reporter: [['list']],
   use: {

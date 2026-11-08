@@ -82,6 +82,41 @@ async function upload(token: string, transferId: string): Promise<string> {
   return json.data.documentId;
 }
 
+/** Registers a fresh parcel for the seller and walks a transfer to BUYER_ACCEPTED with a receipt attached (the mobile part). */
+export async function prepareAcceptedTransfer(): Promise<{ parcelId: string; transferId: string; buyerId: string }> {
+  const rnd = () => Math.floor(100 + Math.random() * 899);
+  const parcelId = `DSM-UBG-${rnd()}-${rnd()}`;
+  const registrar = await signIn('registrar');
+  const seller = await signIn('seller');
+  const buyer = await signIn('buyer');
+  const reg = await t3<{ txId: string }>(registrar.token, '/parcels', {
+    parcelId,
+    titleNumber: `E2E/${parcelId}`,
+    region: 'Dar es Salaam',
+    district: 'Ubungo',
+    ward: 'Sinza',
+    blockNumber: '7',
+    plotNumber: '21',
+    area: 610,
+    landUse: 'RESIDENTIAL',
+    location: { latitude: -6.7735, longitude: 39.2265 },
+    owner: { userId: seller.userId },
+  });
+  await committed(registrar.token, reg.txId);
+  const init = await t3<{ txId: string; transferId: string }>(seller.token, '/transfers', { parcelId, buyer: { userId: buyer.userId }, salePrice: 98_500_000 });
+  await committed(seller.token, init.txId);
+  const acc = await t3<{ txId: string }>(buyer.token, `/transfers/${init.transferId}/accept`, {});
+  await committed(buyer.token, acc.txId);
+  await upload(buyer.token, init.transferId);
+  return { parcelId, transferId: init.transferId, buyerId: buyer.userId };
+}
+
+/** Public QR verification (no sign-in). */
+export async function publicVerify(parcelId: string): Promise<{ owner: string; status: string; ownershipVersion: number }> {
+  const res = await fetch(`${API}/verify/parcels/${parcelId}`);
+  return ((await res.json()) as { data: { owner: string; status: string; ownershipVersion: number } }).data;
+}
+
 /** Registers a fresh parcel and walks a transfer to OFFICER_VERIFIED, ready for a registrar to approve. */
 export async function prepareVerifiedTransfer(): Promise<{ parcelId: string; transferId: string }> {
   const rnd = () => Math.floor(100 + Math.random() * 899);

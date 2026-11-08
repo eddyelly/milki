@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.mts",
-    "seed": "tsx --env-file=.env src/scripts/seed.ts"
+    "seed": "tsx --env-file=.env src/scripts/seed.ts",
+    "seed:demo": "tsx --env-file=.env src/scripts/seed-demo.ts"
   },
   "license": "UNLICENSED",
   "dependencies": {

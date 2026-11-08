@@ -339,6 +339,8 @@ CORS_ORIGINS=http://localhost:3100
 FCM_SERVICE_ACCOUNT_PATH=./secrets/firebase.json
 # Test/dev only: relax auth rate limits (requests per minute per IP).
 AUTH_RATE_LIMIT_PER_MIN=20
+# Baseline requests per minute per IP for the whole API (partner API has per-client limits).
+API_RATE_LIMIT_PER_MIN=600
 ```
 
 **web/.env.example**
@@ -737,6 +739,31 @@ Do not animate data tables or anything a user reads repeatedly in long sessions.
     - A Hyperledger Caliper benchmark for the report.
 
 ---
+
+**Hardening decisions (Phase 10):**
+- **API:**
+  - Baseline per-IP limit on all of `/api/v1` (`API_RATE_LIMIT_PER_MIN`, default 600; `/partner` and `/health` are excluded). The stricter auth, re-auth, verify and per-client partner limiters still apply.
+  - Helmet headers (CSP, HSTS, nosniff, frame options); no `x-powered-by`.
+  - 1 MB JSON limit, with a proper 413 `PAYLOAD_TOO_LARGE`. Malformed bodies return 400, never 500.
+  - The JWT secrets must be at least 32 characters (checked at start-up).
+- **Web:** security headers for every route (`next.config.ts`):
+  - `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS and COOP.
+  - A CSP limited to `frame-ancestors`, `base-uri`, `object-src` and `form-action`. Script sources are not restricted, because Next's inline bootstrap would need per-request nonces.
+- **Demo seed:** `npm run seed:demo` (after `npm run seed`, network running) adds:
+  - 4 more landowners and 3 land offices.
+  - 30 parcels: 10 each in Dar es Salaam (DSM-KIN), Arusha (ARU-ARS) and Mwanza (MWZ-ILE), with boundaries.
+  - Transfers in every state (initiated, accepted, payments confirmed, verified, completed, cancelled), a CRDB mortgage and a boundary dispute.
+  - It is idempotent and waits for every commit. The parcel plan is computed up front, so a re-run draws the same IDs.
+- **E2E:** `web/e2e/full-transfer.spec.ts` covers the whole transfer.
+  - Through the API (as the mobile app would): registration, initiation, acceptance and receipt upload.
+  - In the portal: the officer confirms payments and verifies, the registrar approves (T3 each).
+  - Public QR verification then shows the buyer as owner.
+  - Playwright runs with **1 worker**, because specs share the demo accounts and Mailpit OTPs. Repeated runs within a minute can hit the 20/min sign-in limit (`AUTH_RATE_LIMIT_PER_MIN`).
+- **Caliper:** `benchmarks/caliper/` (Caliper 0.6.0, `fabric:fabric-gateway`) uses identity `caliper-registrar` (role REGISTRAR, from `enroll.sh`).
+  - Rounds: GetParcel (100 and 400 TPS), GetParcelHistory, QueryParcels (CouchDB), RegisterParcel (10, 25 and 60 TPS). Docker resource monitor with `containers: [all]`.
+  - Results are in `docs/benchmarks/caliper-results.md`. Write rounds add parcels in region "Benchmark", so use a throwaway network.
+  - The benchmark found a missing compound index. **Chaincode v1.3** adds `indexParcelRegionStatus` (`[docType, region, status]`): region + status rich queries went from 0.47 s to 0.024 s, and the round from 707 failures to 0.
+  - `network/scripts/deploy-cc.sh -ccv 1.3` upgrades an existing network.
 
 ## 14. Testing and definition of done
 

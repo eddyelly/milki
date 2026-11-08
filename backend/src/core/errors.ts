@@ -40,6 +40,9 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next)
   if (err instanceof AppError) appErr = err;
   else if (err instanceof ZodError) appErr = zodToAppError(err);
   else if (isBodyParserError(err)) appErr = badRequest('The request body is not valid JSON.', undefined, 'INVALID_JSON');
+  else if (bodyParserType(err) === 'entity.too.large') appErr = new AppError(413, 'PAYLOAD_TOO_LARGE', 'The request is too large.');
+  else if (bodyParserType(err)?.startsWith('entity.') || bodyParserType(err) === 'encoding.unsupported' || bodyParserType(err) === 'charset.unsupported')
+    appErr = badRequest('The request body could not be read.', undefined, 'INVALID_BODY');
   else if (isMulterError(err)) appErr = multerToAppError(err);
   else {
     (req.log ?? logger).error({ err }, 'unhandled error');
@@ -50,6 +53,10 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next)
     error: { code: appErr.code, message: appErr.message, details: appErr.details ?? null },
   });
 };
+
+function bodyParserType(err: unknown): string | undefined {
+  return typeof err === 'object' && err !== null ? (err as { type?: string }).type : undefined;
+}
 
 function isBodyParserError(err: unknown): boolean {
   return typeof err === 'object' && err !== null && (err as { type?: string }).type === 'entity.parse.failed';

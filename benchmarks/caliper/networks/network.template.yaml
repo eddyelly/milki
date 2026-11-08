@@ -1,0 +1,23 @@
+name: milki-land-registry
+version: "2.0.0"
+
+caliper:
+  blockchain: fabric
+
+channels:
+  - channelName: land-channel
+    contracts:
+      - id: land-registry
+
+organizations:
+  - mspid: Org1MSP
+    identities:
+      certificates:
+        - name: caliper-registrar
+          clientPrivateKey:
+            path: __KEY__
+          clientSignedCert:
+            path: __CERT__
+    connectionProfile:
+      path: __PROFILE__
+      discover: true

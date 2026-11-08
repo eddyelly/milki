@@ -31,3 +31,17 @@ export const reauthLimiter = rateLimit({
   store: store('reauth'),
   message: limitedResponse('Too many confirmation attempts. Please wait a minute and try again.'),
 });
+
+/**
+ * Baseline per-IP limit for the whole API (CLAUDE.md §13 phase 10). Partner calls are limited per API client
+ * instead, and the stricter auth/re-auth limiters still apply on top.
+ */
+export const apiLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: env.API_RATE_LIMIT_PER_MIN,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/partner/') || req.path === '/health',
+  store: store('api'),
+  message: limitedResponse('Too many requests from this network. Please wait a minute and try again.'),
+});

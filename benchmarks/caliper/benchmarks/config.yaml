@@ -1,0 +1,52 @@
+test:
+  name: milki-land-registry
+  description: >-
+    Throughput and latency of the land-registry chaincode on the Milki test network
+    (Fabric 2.5.16, Raft orderer, CouchDB, endorsement AND(Org1, OR(Org2, Org3))).
+  workers:
+    number: 2
+  rounds:
+    - label: GetParcel
+      description: Point read (QR verification / partner API hot path)
+      txDuration: 30
+      rateControl: { type: fixed-rate, opts: { tps: 100 } }
+      workload: { module: workload/getParcel.js }
+    - label: GetParcel-peak
+      description: Point read at a high offered load
+      txDuration: 30
+      rateControl: { type: fixed-rate, opts: { tps: 400 } }
+      workload: { module: workload/getParcel.js }
+    - label: GetParcelHistory
+      description: Key history (ownership chain)
+      txDuration: 30
+      rateControl: { type: fixed-rate, opts: { tps: 50 } }
+      workload: { module: workload/getParcelHistory.js }
+    - label: QueryParcels
+      description: CouchDB rich query by region and status
+      txDuration: 30
+      rateControl: { type: fixed-rate, opts: { tps: 25 } }
+      workload: { module: workload/queryParcels.js, arguments: { pageSize: 20 } }
+    - label: RegisterParcel-10tps
+      description: Ledger write (endorse → order → commit)
+      txNumber: 150
+      rateControl: { type: fixed-rate, opts: { tps: 10 } }
+      workload: { module: workload/registerParcel.js }
+    - label: RegisterParcel-25tps
+      description: Ledger write at a higher offered load
+      txNumber: 250
+      rateControl: { type: fixed-rate, opts: { tps: 25 } }
+      workload: { module: workload/registerParcel.js }
+
+    - label: RegisterParcel-peak
+      description: Ledger write at a high offered load
+      txNumber: 500
+      rateControl: { type: fixed-rate, opts: { tps: 60 } }
+      workload: { module: workload/registerParcel.js }
+
+monitors:
+  resource:
+    # Docker names carry a leading "/"; "all" also covers the chaincode containers (dev-peer0.*).
+    - module: docker
+      options:
+        interval: 5
+        containers: [all]

@@ -1,0 +1,16 @@
+{
+  "name": "milki-caliper",
+  "private": true,
+  "description": "Hyperledger Caliper benchmark of the land-registry chaincode (CLAUDE.md §13 phase 10).",
+  "scripts": {
+    "bind": "caliper bind --caliper-bind-sut fabric:fabric-gateway",
+    "bench": "./run.sh"
+  },
+  "devDependencies": {
+    "@hyperledger/caliper-cli": "0.6.0"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.3",
+    "@hyperledger/fabric-gateway": "^1.5.0"
+  }
+}

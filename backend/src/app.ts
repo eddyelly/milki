@@ -10,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 import { env, isTest } from './config/env';
 import { errorHandler, notFoundHandler } from './core/errors';
+import { apiLimiter } from './core/rate-limit';
 import { logger } from './core/logger';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
@@ -63,6 +64,7 @@ export function createApp(): Express {
   app.use(cookieParser());
 
   const api = express.Router();
+  api.use(apiLimiter);
   api.use('/health', healthRouter);
   api.use('/auth', authRouter);
   api.use('/parcels', parcelDisputeRouter);

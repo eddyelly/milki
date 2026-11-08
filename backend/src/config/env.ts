@@ -24,8 +24,8 @@ const schema = z.object({
   SMTP_PORT: z.coerce.number().int().default(1126),
   SMTP_FROM: z.string().default('Milki <no-reply@milki.go.tz>'),
 
-  JWT_ACCESS_SECRET: z.string().min(16),
-  JWT_REFRESH_SECRET: z.string().min(16),
+  JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters.'),
+  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters.'),
   JWT_ACCESS_TTL: z.string().default('15m'),
   JWT_REFRESH_TTL: z.string().default('7d'),
   WALLET_ENCRYPTION_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'must be 32 bytes as 64 hex characters'),
@@ -56,6 +56,8 @@ const schema = z.object({
     .transform((s) => s.split(',').map((o) => o.trim()).filter(Boolean)),
   FCM_SERVICE_ACCOUNT_PATH: z.string().default('./secrets/firebase.json'),
   AUTH_RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(20),
+  /** Every /api/v1 route except /partner (which has per-client limits): requests per minute per IP. */
+  API_RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(600),
 });
 
 export type Env = z.infer<typeof schema>;
