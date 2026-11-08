@@ -43,13 +43,26 @@ export const resendSchema = z.object({ challengeId: z.string().min(10).max(64) }
 
 export const refreshSchema = z.object({ refreshToken: z.string().min(20).optional() });
 
-/** Re-authentication for T3 actions: password, or an OTP sent via POST /auth/reauth/otp. */
+const deviceIdSchema = z.string().regex(/^[A-Za-z0-9_-]{8,64}$/, 'Invalid device ID.');
+
+/** Re-authentication for T3 actions: password, an OTP from POST /auth/reauth/otp, or a biometric-unlocked device secret. */
 export const reauthSchema = z.union([
   z.object({ password: z.string().min(1).max(128) }),
   z.object({ challengeId: z.string().min(10).max(64), code: z.string().regex(/^\d{6}$/) }),
+  z.object({ deviceId: deviceIdSchema, deviceSecret: z.string().min(32).max(128) }),
 ]);
+
+/** Registers this phone for biometric re-authentication; proves possession of the password once. */
+export const enrollDeviceSchema = z.object({
+  deviceId: deviceIdSchema,
+  deviceName: z.string().trim().max(80).optional(),
+  password: z.string().min(1).max(128),
+});
+
+export const deviceParams = z.object({ deviceId: deviceIdSchema });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type OtpInput = z.infer<typeof otpSchema>;
 export type ReauthInput = z.infer<typeof reauthSchema>;
+export type EnrollDeviceInput = z.infer<typeof enrollDeviceSchema>;

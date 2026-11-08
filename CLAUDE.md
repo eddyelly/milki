@@ -196,6 +196,61 @@ dart pub global activate flutterfire_cli && flutterfire configure
 ```
 Add `generate: true` under `flutter:` in `pubspec.yaml`. Then create `l10n.yaml` with English and Swahili ARB files.
 
+**Mobile decisions (Phase 7):**
+- **Toolchain:** Flutter 3.47 / Dart 3.13, Riverpod 3, go_router 18. `integration_test` was added with `flutter pub add -d integration_test --sdk=flutter`.
+- **`flutterfire configure` was skipped** (it needs a Firebase login). Push is optional, like on the backend:
+  - `lib/core/push.dart` calls `Firebase.initializeApp()`. Without `google-services.json` / `GoogleService-Info.plist` it fails quietly and push is skipped.
+  - With a config, the app registers its FCM token (`POST /devices`) after sign-in and deletes it on sign-out. It keeps the token API (`getToken`/`onTokenRefresh`) because firebase-admin sends to registration tokens.
+  - While the app is open, commits and changes still arrive over Socket.IO.
+  - To enable push, run `flutterfire configure` in `mobile/`.
+- **Models are hand-written** (`lib/data/models.dart`, null-safe `fromJson`), not freezed/json_serializable. They are small, read-only and need no codegen step. The codegen packages from §4.5 stay installed for later.
+- **Fonts are bundled** in `assets/google_fonts/` (Plus Jakarta Sans 400–700, JetBrains Mono 400–600, with OFL licences). `GoogleFonts.config.allowRuntimeFetching = false`.
+  - `monoStyle()` caps weights at 600.
+  - Theme `textStyle`s must name the font, because a button theme's `textStyle` replaces `labelLarge` rather than merging with it.
+- **Structure:**
+  - `lib/core/`: API client, token store, theme, ledger events, re-auth, push, config.
+  - `lib/data/`: models and repositories.
+  - `lib/state/providers.dart`: session, settings and data providers. Lists refresh on socket `ledger:event` / `notification`.
+  - `lib/router.dart`: session redirect; `/check` is public.
+  - `lib/ui/screens/` and `lib/ui/widgets/`.
+- **Session:**
+  - The access token is in memory. The rotating refresh token, device ID and device secret are in `flutter_secure_storage` (Keystore/Keychain).
+  - A 401 triggers one single-flight refresh, then a retry. A failed refresh signs the user out with a "session ended" banner.
+  - Only `CITIZEN` accounts may use the app; staff are told to use the web portal.
+- **Mobile T3 re-authentication (§8)** uses a **device credential**:
+  - Turning on "Fingerprint / face confirmation" in Settings (T1, password once) calls `POST /auth/reauth/device`.
+  - This returns a 32-byte secret, shown once. The phone keeps it in secure storage; the API stores only its SHA-256 (`reauth_devices`).
+  - At each T3, `local_auth` runs (`biometricOnly: false`, so the device PIN is the fallback). Only after it succeeds does the app send `POST /auth/reauth {deviceId, deviceSecret}`, which returns the usual single-use `X-Reauth-Token`.
+  - Password re-auth is always available. Sign-out and turning the setting off revoke the credential (`DELETE /auth/reauth/device/:id`).
+- **`showConfirmAction(context, tier: …)`** (`lib/ui/widgets/confirm_action.dart`) is the only confirmation helper.
+  - **T1:** summary, then confirm.
+  - **T2 / destructive:** red, with `typeToConfirm`.
+  - **T3:** impact sentence, then "permanent and publicly auditable", then re-auth, then `SealedOnLedger` (submitting → endorsing → committed with block and txId).
+  - The idempotency key is fixed for the life of the sheet. Extra inputs (cancel reason, password) re-validate through `listen:` + `canConfirm`.
+  - A chaincode refusal returns to the review step with the human message.
+- **Public QR verification** (backend `verify` module, no sign-in, 60/min per IP, read from the ledger with the service identity):
+  - `GET /verify/parcels/:id` returns status, a short owner name and encumbrance/dispute flags.
+  - `GET /verify/documents/:id?sha256=` returns a hash match.
+  - QR payloads: `milki:parcel:<ID>` (shown as "Share proof of ownership" on the parcel screen) and `milki:doc:<DOC-ID>:<sha256>`. Verification URLs and bare parcel IDs are accepted too.
+- **Citizen flows:**
+  - Initiate a transfer: find the buyer by phone, enter the price, then T3.
+  - Accept (T3).
+  - Cancel: T3 + typed transfer ID + reason.
+  - Upload a transfer document from file or camera: T3, client SHA-256, 10 MB cap.
+  - Delete a notification (T1). Mark read needs no confirmation (UI state).
+- **Motion (§10)** follows `MediaQuery.disableAnimations` everywhere: drifting contour background, OTP bounce, Hero parcel card → detail, ownership chain stagger, tracker line fill + breathing step + check-draw, scanline + badge flip / shake, seal stamp.
+- **Swahili:** every string is in `app_sw.arb`. `lib/core/timeago_sw.dart` adds Swahili "time ago" labels, which the timeago package lacks.
+- **Platform config:**
+  - Android: `MainActivity` is a `FlutterFragmentActivity` (local_auth), with AppCompat launch themes and the `androidx.appcompat` dependency.
+  - Android permissions: CAMERA, USE_BIOMETRIC, POST_NOTIFICATIONS. `usesCleartextTraffic` is on for the dev HTTP API.
+  - iOS: camera, Face ID and photo usage strings, plus `NSAllowsLocalNetworking`.
+- **Tests** (`flutter test`):
+  - Repository tests run against an in-memory Dio adapter (`test/support/fakes.dart`).
+  - Widget tests cover `TransferTracker`, `showConfirmAction` (T1/T2/T3, biometric, retry with the same key, commit failure) and the verify screen.
+  - `test/app_flow_test.dart` runs the full app (sign in → OTP → parcel → initiate transfer → sealed).
+  - `test/live/` is a contract test against the running API and is skipped unless `--dart-define=API_URL=…` is set.
+  - `integration_test/app_test.dart` runs on a device or emulator against the live stack, reading the OTP from Mailpit.
+
 ---
 
 ## 5. Ports (fixed; do not change)

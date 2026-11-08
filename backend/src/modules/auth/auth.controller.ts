@@ -3,7 +3,7 @@ import { isProd } from '../../config/env';
 import { currentUser } from '../../core/auth';
 import { created, input, ok } from '../../core/http';
 import { audit } from '../audit/audit.model';
-import type { LoginInput, OtpInput, ReauthInput, RegisterInput } from './auth.schema';
+import type { EnrollDeviceInput, LoginInput, OtpInput, ReauthInput, RegisterInput } from './auth.schema';
 import * as auth from './auth.service';
 import { resendOtp } from './otp.service';
 
@@ -79,4 +79,24 @@ export async function reauth(req: Request, res: Response) {
     await audit(req, { action: 'auth.reauth', outcome: 'FAILURE' });
     throw err;
   }
+}
+
+export async function enrollDevice(req: Request, res: Response) {
+  const user = currentUser(req);
+  const body = input<EnrollDeviceInput>(req, 'body');
+  try {
+    const result = await auth.enrollReauthDevice(user.userId, body);
+    await audit(req, { action: 'auth.reauthDevice.enroll', entityType: 'ReauthDevice', entityId: body.deviceId });
+    return ok(res, result);
+  } catch (err) {
+    await audit(req, { action: 'auth.reauthDevice.enroll', outcome: 'FAILURE', entityId: body.deviceId });
+    throw err;
+  }
+}
+
+export async function revokeDevice(req: Request, res: Response) {
+  const { deviceId } = input<{ deviceId: string }>(req, 'params');
+  const revoked = await auth.revokeReauthDevice(currentUser(req).userId, deviceId);
+  await audit(req, { action: 'auth.reauthDevice.revoke', entityType: 'ReauthDevice', entityId: deviceId });
+  return ok(res, { revoked });
 }

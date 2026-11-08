@@ -1,0 +1,321 @@
+{
+  "@@locale": "en",
+  "appName": "Milki",
+  "tagline": "Your land, a permanent record.",
+  "navHome": "Home",
+  "navParcels": "Parcels",
+  "navTransfers": "Transfers",
+  "navVerify": "Verify",
+  "navHelp": "Help",
+  "signInTitle": "Sign in",
+  "signInSubtitle": "Use the phone number and password you registered with.",
+  "phoneOrEmail": "Phone number or email",
+  "password": "Password",
+  "continueAction": "Continue",
+  "createAccount": "Create an account",
+  "haveAccount": "Already registered? Sign in",
+  "registerTitle": "Create your Milki account",
+  "fullName": "Full name",
+  "phone": "Phone number",
+  "nida": "NIDA number",
+  "emailOptional": "Email (optional)",
+  "passwordHint": "At least 8 characters, with a number",
+  "language": "Language",
+  "otpTitle": "Enter your code",
+  "otpSentTo": "We sent a 6-digit code to {destination}. It expires in 5 minutes.",
+  "@otpSentTo": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyAndContinue": "Verify and continue",
+  "resendCode": "Resend code",
+  "resendIn": "Resend in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "back": "Back",
+  "fieldRequired": "This field is required.",
+  "invalidPhone": "Enter a valid Tanzanian mobile number, e.g. 0712 345 678.",
+  "invalidNida": "Enter your 20-digit NIDA number.",
+  "invalidPassword": "Use at least 8 characters including a number.",
+  "greetingMorning": "Habari za asubuhi",
+  "greetingAfternoon": "Habari za mchana",
+  "greetingEvening": "Habari za jioni",
+  "myParcels": "My parcels",
+  "waitingForYou": "Waiting for you",
+  "recentActivity": "Recent activity",
+  "noActivity": "Nothing new. Updates about your land will appear here.",
+  "quickVerify": "Verify a title",
+  "quickTransfer": "Transfer land",
+  "seeAll": "See all",
+  "parcelsTitle": "My parcels",
+  "noParcels": "No parcels yet",
+  "noParcelsBody": "Parcels registered in your name by the land registry appear here.",
+  "area": "Area",
+  "landUse": "Land use",
+  "titleNumber": "Title number",
+  "location": "Location",
+  "registeredOn": "Registered",
+  "ownershipVersion": "Ownership version",
+  "lastTransaction": "Last transaction",
+  "history": "History",
+  "documents": "Documents",
+  "noDocuments": "No documents attached yet.",
+  "shareProof": "Share proof of ownership",
+  "shareProofBody": "Anyone can scan this code in the Milki app to check this parcel on the ledger.",
+  "transferThisParcel": "Transfer this parcel",
+  "cannotTransfer": "This parcel cannot be transferred right now.",
+  "registeredTo": "Registered to {name}",
+  "@registeredTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerChanged": "Owner changed",
+  "statusChanged": "Status changed",
+  "transfersTitle": "Transfers",
+  "asSeller": "Selling",
+  "asBuyer": "Buying",
+  "noTransfers": "No transfers yet",
+  "noTransfersBody": "Transfers you start or receive appear here.",
+  "seller": "Seller",
+  "buyer": "Buyer",
+  "salePrice": "Sale price",
+  "privateData": "Private — kept only on Ministry and Land Office peers, never on the public ledger.",
+  "acceptTransfer": "Accept transfer",
+  "cancelTransfer": "Cancel transfer",
+  "uploadDocument": "Upload a document",
+  "startTransferTitle": "Transfer {parcelId}",
+  "@startTransferTitle": {
+    "placeholders": {
+      "parcelId": {
+        "type": "String"
+      }
+    }
+  },
+  "buyerPhone": "Buyer's phone number",
+  "findBuyer": "Find buyer",
+  "buyerFound": "Buyer: {name}",
+  "@buyerFound": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "salePriceTzs": "Sale price (TZS)",
+  "reviewTransfer": "Review transfer",
+  "documentType": "Document type",
+  "chooseFile": "Choose a file",
+  "stepInitiated": "Initiated",
+  "stepAccepted": "Buyer accepted",
+  "stepPayments": "Payments confirmed",
+  "stepVerified": "Verified",
+  "stepRecorded": "Approved & recorded",
+  "closedCancelled": "Cancelled by the seller.",
+  "closedRejected": "Rejected by the land registry.",
+  "statusActive": "Active",
+  "statusPendingTransfer": "Pending transfer",
+  "statusEncumbered": "Encumbered",
+  "statusDisputed": "Disputed",
+  "statusFrozen": "Frozen",
+  "statusRetired": "Retired",
+  "statusInitiated": "Initiated",
+  "statusBuyerAccepted": "Buyer accepted",
+  "statusPaymentsConfirmed": "Payments confirmed",
+  "statusOfficerVerified": "Officer verified",
+  "statusApproved": "Approved",
+  "statusCompleted": "Completed",
+  "statusCancelled": "Cancelled",
+  "statusRejected": "Rejected",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "done": "Done",
+  "tryAgain": "Try again",
+  "confirmItsYou": "Confirm it's you",
+  "ledgerStep": "Ledger action · step {step} of 2",
+  "@ledgerStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "permanentWarning": "This is permanent and publicly auditable. It will be signed with your ledger identity.",
+  "typeToConfirm": "Type {value} to confirm",
+  "@typeToConfirm": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "useBiometrics": "Confirm with fingerprint or face",
+  "usePasswordInstead": "Use my password instead",
+  "biometricReason": "Confirm this land register action",
+  "signAndRecord": "Sign and record",
+  "submitting": "Submitting",
+  "endorsing": "Endorsing",
+  "committed": "Committed",
+  "submittingBody": "Signing with your ledger identity and sending to the peers…",
+  "endorsingBody": "Ministry and Land Office peers are endorsing; waiting for the block…",
+  "sealedInBlock": "Sealed on the ledger in block #{block}",
+  "@sealedInBlock": {
+    "placeholders": {
+      "block": {
+        "type": "int"
+      }
+    }
+  },
+  "transaction": "Transaction",
+  "ledgerFailed": "The ledger did not accept this transaction. Nothing was changed.",
+  "stillWaiting": "Still waiting for the ledger. Your request was submitted — check back shortly.",
+  "verifyTitle": "Verify on Milki",
+  "verifySubtitle": "Scan the QR code on a title or document, or type the parcel ID.",
+  "scanning": "Point the camera at a Milki QR code",
+  "enterParcelId": "Parcel ID, e.g. DSM-KIN-12-45",
+  "check": "Check",
+  "verifiedOnMilki": "Verified on Milki",
+  "verifiedParcelBody": "This parcel is registered on the ledger.",
+  "verifiedDocBody": "This document's fingerprint matches the ledger exactly.",
+  "mismatch": "Does not match",
+  "mismatchBody": "This document is different from the one recorded on the ledger. Do not rely on it.",
+  "owner": "Owner",
+  "unrecognisedCode": "This QR code is not a Milki code.",
+  "cameraUnavailable": "The camera is not available. Type the parcel ID instead.",
+  "helpTitle": "Help",
+  "helpSubtitle": "Answers to common questions. Live support arrives soon.",
+  "faqTransferQ": "How do I transfer my land?",
+  "faqTransferA": "Open the parcel, tap 'Transfer this parcel', find the buyer by phone number and enter the price. The buyer accepts in their app, then a land officer confirms payments and verifies, and a registrar approves.",
+  "faqMortgageQ": "Why can't I transfer a parcel with a mortgage?",
+  "faqMortgageA": "A parcel with an active mortgage is ENCUMBERED. The bank must release the mortgage on Milki before ownership can move.",
+  "faqVerifyQ": "How do I check a title is genuine?",
+  "faqVerifyA": "Use Verify and scan the QR code on the title or document. Milki checks it directly against the ledger.",
+  "faqPrivacyQ": "Who can see my sale price?",
+  "faqPrivacyA": "Only you, the other party, land officers and registrars. It is never written to the public ledger.",
+  "notificationsTitle": "Notifications",
+  "noNotifications": "You're all caught up.",
+  "markAllRead": "Mark all read",
+  "deleteNotification": "Delete notification?",
+  "deleteNotificationBody": "It will be removed from your inbox. The ledger record is not affected.",
+  "delete": "Delete",
+  "settingsTitle": "Settings",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "biometricConfirm": "Fingerprint / face confirmation",
+  "biometricConfirmBody": "Confirm land register actions with your fingerprint or face (device PIN as fallback).",
+  "enableBiometrics": "Turn on fingerprint confirmation",
+  "enableBiometricsBody": "Enter your password once to link this phone.",
+  "signOut": "Sign out",
+  "saved": "Saved",
+  "loadError": "Something went wrong. Pull to refresh or try again.",
+  "offline": "Milki could not be reached. Check your connection.",
+  "acceptNext": "A land officer will confirm the payments next, then verify the transfer.",
+  "all": "All",
+  "blockedEncumbered": "This parcel has an active mortgage. The bank must release it before ownership can move.",
+  "blockedDisputed": "This parcel has an open dispute. It cannot be transferred until the land office resolves it.",
+  "blockedFrozen": "The land registry has frozen this parcel. Contact your land office.",
+  "cancelConsequence": "The transfer closes for good. To sell later you will start a new transfer.",
+  "cannotSellToSelf": "That is your own number. Enter the buyer's phone number.",
+  "contactOffice": "Need a person? Visit your district land office with your title number. Live support in the app is coming soon.",
+  "deleted": "Deleted",
+  "faqBiometricQ": "Why does Milki ask for my fingerprint?",
+  "faqBiometricA": "Every change to the land register is signed with your identity. Your fingerprint (or your password) confirms it is really you before anything is recorded.",
+  "file": "File",
+  "fileStaysPrivate": "The file is stored privately. Only its SHA-256 fingerprint is written to the ledger.",
+  "fileTooLarge": "The file is larger than 10 MB.",
+  "fileTypesHint": "PDF, JPEG or PNG, up to 10 MB.",
+  "impactAccept": "You agree to buy {parcelId} from {seller}.",
+  "@impactAccept": {
+    "placeholders": {
+      "parcelId": {
+        "type": "String"
+      },
+      "seller": {
+        "type": "String"
+      }
+    }
+  },
+  "impactCancel": "The transfer of {parcelId} will be cancelled. The parcel stays with you.",
+  "@impactCancel": {
+    "placeholders": {
+      "parcelId": {
+        "type": "String"
+      }
+    }
+  },
+  "impactDocument": "A {documentType} will be attached to {transferId} on the ledger.",
+  "@impactDocument": {
+    "placeholders": {
+      "documentType": {
+        "type": "String"
+      },
+      "transferId": {
+        "type": "String"
+      }
+    }
+  },
+  "impactTransfer": "Ownership of {parcelId} will move from {from} to {to}.",
+  "@impactTransfer": {
+    "placeholders": {
+      "parcelId": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "invalidAmount": "Enter an amount greater than zero.",
+  "needsYourAcceptance": "Needs your acceptance",
+  "noResults": "No matching answers.",
+  "notVerified": "Not verified",
+  "parcel": "Parcel",
+  "reason": "Reason",
+  "scan": "Scan",
+  "scanAnother": "Scan another code",
+  "searchHelp": "Search help",
+  "sessionExpired": "Your session has ended. Please sign in again.",
+  "size": "Size",
+  "staffUseWeb": "The Milki app is for landowners. Staff accounts sign in on the web portal.",
+  "status": "Status",
+  "supersededNote": "A newer version of this document exists. Ask for the latest copy.",
+  "takePhoto": "Take a photo",
+  "transferNextSteps": "Next: the buyer accepts in their app, a land officer confirms payments and verifies, then a registrar approves.",
+  "typeId": "Type ID",
+  "viewActiveTransfer": "View the transfer in progress",
+  "waitingForBuyer": "Waiting for the buyer to accept.",
+  "waitingForOfficials": "Waiting for the land office. You'll be notified at each step.",
+  "warnDisputed": "This parcel has an open dispute.",
+  "warnEncumbered": "This parcel has an active mortgage.",
+  "you": "you",
+  "blockPlot": "Block {block}, Plot {plot}",
+  "@blockPlot": {
+    "placeholders": {
+      "block": {
+        "type": "String"
+      },
+      "plot": {
+        "type": "String"
+      }
+    }
+  },
+  "stepDone": "done",
+  "stepCurrent": "current",
+  "copy": "Copy",
+  "copied": "Copied"
+}

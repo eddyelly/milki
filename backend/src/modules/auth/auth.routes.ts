@@ -3,7 +3,7 @@ import { requireAuth } from '../../core/auth';
 import { validate } from '../../core/http';
 import { authLimiter, reauthLimiter } from '../../core/rate-limit';
 import * as c from './auth.controller';
-import { loginSchema, otpSchema, reauthSchema, refreshSchema, registerSchema, resendSchema } from './auth.schema';
+import { deviceParams, enrollDeviceSchema, loginSchema, otpSchema, reauthSchema, refreshSchema, registerSchema, resendSchema } from './auth.schema';
 
 export const authRouter = Router();
 
@@ -16,3 +16,5 @@ authRouter.post('/logout', validate({ body: refreshSchema }), c.logout);
 authRouter.get('/me', requireAuth, c.me);
 authRouter.post('/reauth/otp', requireAuth, reauthLimiter, c.reauthOtp);
 authRouter.post('/reauth', requireAuth, reauthLimiter, validate({ body: reauthSchema }), c.reauth);
+authRouter.post('/reauth/device', requireAuth, reauthLimiter, validate({ body: enrollDeviceSchema }), c.enrollDevice);
+authRouter.delete('/reauth/device/:deviceId', requireAuth, validate({ params: deviceParams }), c.revokeDevice);

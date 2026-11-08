@@ -21,6 +21,7 @@ import { deviceRouter, notificationRouter } from './modules/notifications/notifi
 import { parcelRouter } from './modules/parcels/parcel.routes';
 import { transferRouter } from './modules/transfers/transfer.routes';
 import { userRouter } from './modules/users/user.routes';
+import { verifyRouter } from './modules/verify/verify.routes';
 
 const OPENAPI_PATH = path.resolve(__dirname, '../../docs/openapi.yaml');
 
@@ -68,6 +69,7 @@ export function createApp(): Express {
   api.use('/notifications', notificationRouter);
   api.use('/devices', deviceRouter);
   api.use('/users', userRouter);
+  api.use('/verify', verifyRouter);
   app.use('/api/v1', api);
 
   const spec = loadOpenApi();

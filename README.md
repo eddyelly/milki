@@ -69,6 +69,20 @@ npm run test:e2e             # Playwright: login → approve transfer on the liv
 
 Sign in with a staff demo account (e.g. `registrar@milki.dev` / `Milki@2026`); the SMS code is in Mailpit. Landowners use the mobile app.
 
+## Mobile app (Phase 7)
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_URL=http://10.0.2.2:4100/api/v1     # Android emulator; use your LAN IP on a phone
+flutter analyze && flutter test                                  # unit, widget and full-app tests (fake API)
+flutter test test/live --dart-define=API_URL=http://localhost:4100/api/v1   # contract test on the running stack
+flutter test integration_test/app_test.dart \
+  --dart-define=API_URL=http://10.0.2.2:4100/api/v1 --dart-define=MAILPIT_URL=http://10.0.2.2:8126   # on a device/emulator
+```
+
+Sign in as `citizen@milki.dev` (or `buyer@milki.dev`) / `Milki@2026`; the SMS code is in Mailpit. Turn on fingerprint confirmation in Settings to confirm ledger actions with biometrics. Push notifications need `flutterfire configure` (optional; without it the app uses the live socket only).
+
 ## Build progress
 
 - [x] 1. Infra
@@ -77,7 +91,7 @@ Sign in with a staff demo account (e.g. `registrar@milki.dev` / `Milki@2026`); t
 - [x] 4. Backend core
 - [x] 5. Transfers and documents
 - [x] 6. Web portal
-- [ ] 7. Mobile app
+- [x] 7. Mobile app
 - [ ] 8. Support
 - [ ] 9. Admin and partner API
 - [ ] 10. Hardening

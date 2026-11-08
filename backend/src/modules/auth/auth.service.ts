@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt';
 import { env } from '../../config/env';
 import { consumeRefreshToken, issueReauthToken, issueTokens, REAUTH_TTL_SECONDS, revokeRefreshToken, type TokenPair } from '../../core/auth';
-import { piiHash, seal } from '../../core/crypto';
+import { piiHash, randomToken, safeEqual, seal, sha256Hex } from '../../core/crypto';
 import { AppError, conflict, forbidden, unauthorized } from '../../core/errors';
 import { publicUser, type PublicUser, User, type UserDoc } from '../users/user.model';
 import { ensureLedgerIdentity, findByIdentifier, findByUserId, newUserId } from '../users/user.service';
-import type { LoginInput, OtpInput, ReauthInput, RegisterInput } from './auth.schema';
+import type { EnrollDeviceInput, LoginInput, OtpInput, ReauthInput, RegisterInput } from './auth.schema';
+import { ReauthDevice } from './reauth-device.model';
 import { issueOtp, verifyOtp } from './otp.service';
 
 export const BCRYPT_COST = env.NODE_ENV === 'test' ? 4 : 12;
@@ -116,9 +117,37 @@ export async function reauthenticate(userId: string, input: ReauthInput): Promis
     if (!(await bcrypt.compare(input.password, user.passwordHash))) {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'That password is not correct.');
     }
+  } else if ('deviceSecret' in input) {
+    const device = await ReauthDevice.findOne({ userId: user.userId, deviceId: input.deviceId, revokedAt: null });
+    if (!device || !safeEqual(device.secretHash, sha256Hex(input.deviceSecret))) {
+      throw new AppError(401, 'DEVICE_NOT_TRUSTED', 'This phone is no longer set up for fingerprint confirmation. Use your password instead.');
+    }
+    device.lastUsedAt = new Date();
+    await device.save();
   } else {
     const res = await verifyOtp(input.challengeId, input.code, 'REAUTH');
     if (res.userId !== user.userId) throw unauthorized('This code belongs to another account.', 'OTP_INVALID');
   }
   return { reauthToken: issueReauthToken(user.userId), expiresIn: REAUTH_TTL_SECONDS };
+}
+
+/** Creates (or replaces) this phone's biometric re-auth secret. Returned once; only its hash is stored. */
+export async function enrollReauthDevice(userId: string, input: EnrollDeviceInput): Promise<{ deviceId: string; deviceSecret: string }> {
+  const user = await findByUserId(userId);
+  if (!user || user.status !== 'ACTIVE') throw unauthorized();
+  if (!(await bcrypt.compare(input.password, user.passwordHash))) {
+    throw new AppError(401, 'INVALID_CREDENTIALS', 'That password is not correct.');
+  }
+  const deviceSecret = randomToken(32);
+  await ReauthDevice.updateOne(
+    { userId, deviceId: input.deviceId },
+    { userId, deviceId: input.deviceId, deviceName: input.deviceName, secretHash: sha256Hex(deviceSecret), revokedAt: null },
+    { upsert: true },
+  );
+  return { deviceId: input.deviceId, deviceSecret };
+}
+
+export async function revokeReauthDevice(userId: string, deviceId: string): Promise<boolean> {
+  const r = await ReauthDevice.updateOne({ userId, deviceId, revokedAt: null }, { revokedAt: new Date() });
+  return r.modifiedCount > 0;
 }

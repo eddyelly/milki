@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Milki API
-  version: 0.6.0
+  version: 0.7.0
   description: |
     Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
 
@@ -29,6 +29,7 @@ tags:
   - name: Stats
   - name: Ledger
   - name: Health
+  - name: Verify
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -247,7 +248,7 @@ paths:
     post:
       tags: [Auth]
       security: [{ bearer: [] }]
-      summary: Re-authenticate for a ledger write (password or OTP) → single-use reauth token
+      summary: Re-authenticate for a ledger write (password, OTP or biometric-unlocked device secret) → single-use reauth token
       requestBody:
         required: true
         content:
@@ -256,9 +257,56 @@ paths:
               oneOf:
                 - { type: object, required: [password], properties: { password: { type: string } } }
                 - { type: object, required: [challengeId, code], properties: { challengeId: { type: string }, code: { type: string } } }
+                - { type: object, required: [deviceId, deviceSecret], description: Mobile, after a local biometric/PIN check, properties: { deviceId: { type: string }, deviceSecret: { type: string } } }
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { data: { type: object, properties: { reauthToken: { type: string }, expiresIn: { type: integer } } } } } } } }
         '401': { $ref: '#/components/responses/Error' }
+
+  /auth/reauth/device:
+    post:
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      summary: Link this phone for biometric confirmation (proves the password once) → device secret, shown once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, password]
+              properties:
+                deviceId: { type: string, pattern: '^[A-Za-z0-9_-]{8,64}$' }
+                deviceName: { type: string, maxLength: 80 }
+                password: { type: string }
+      responses:
+        '200': { description: 'data = { deviceId, deviceSecret }. The secret is stored only hashed on the server and in the phone''s Keystore/Keychain.' }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/reauth/device/{deviceId}:
+    delete:
+      tags: [Auth]
+      security: [{ bearer: [] }]
+      summary: Unlink this phone (turn off biometric confirmation; also done on sign-out)
+      parameters: [{ name: deviceId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OK } }
+
+  /verify/parcels/{parcelId}:
+    get:
+      tags: [Verify]
+      summary: Public QR verification of a parcel, read from the ledger (no sign-in, 60/min per IP)
+      parameters: [{ name: parcelId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: 'data = { parcelId, titleNumber, region, district, ward, area, landUse, status, owner (short display name), ownershipVersion, encumbered, disputed, frozen, transferInProgress, lastTxId, updatedAt, verifiedAt }; meta.source = ledger' }
+        '404': { $ref: '#/components/responses/Error' }
+  /verify/documents/{documentId}:
+    get:
+      tags: [Verify]
+      summary: Public hash check of a document against the ledger (the QR carries its ID and SHA-256)
+      parameters:
+        - { name: documentId, in: path, required: true, schema: { type: string, pattern: '^DOC-[A-F0-9]{16}$' } }
+        - { name: sha256, in: query, required: true, schema: { type: string, pattern: '^[a-f0-9]{64}$' } }
+      responses:
+        '200': { description: 'data = { documentId, match, status, version, latestDocumentId, parcelId, documentType, sha256, verifiedAt }' }
+        '404': { $ref: '#/components/responses/Error' }
 
   /parcels:
     get:
