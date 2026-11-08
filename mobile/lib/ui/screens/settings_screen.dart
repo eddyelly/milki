@@ -33,7 +33,7 @@ class SettingsScreen extends ConsumerWidget {
         return true;
       },
     );
-    password.dispose();
+    // Not disposed here: the sheet's exit animation still renders the field; it is collected with the sheet.
     ref.invalidate(deviceCredentialProvider);
     if (ok == true && context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.saved)));
   }

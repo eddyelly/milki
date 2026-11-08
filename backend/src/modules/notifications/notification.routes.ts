@@ -36,7 +36,7 @@ notificationRouter.post('/:id/read', validate({ params: idParams }), async (req:
   const n = await Notification.findOneAndUpdate(
     { _id: input<{ id: string }>(req, 'params').id, userId: currentUser(req).userId },
     { $set: { readAt: new Date() } },
-    { new: true },
+    { returnDocument: 'after' },
   ).lean();
   if (!n) throw notFound('Notification not found.');
   return ok(res, n);

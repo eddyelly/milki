@@ -9,8 +9,10 @@ import 'package:milki_mobile/core/api/api_client.dart';
 import 'package:milki_mobile/core/api/token_store.dart';
 import 'package:milki_mobile/core/config.dart';
 import 'package:milki_mobile/core/ledger_events.dart';
+import 'package:milki_mobile/core/support_chat.dart';
 import 'package:milki_mobile/data/models.dart';
 import 'package:milki_mobile/data/repositories.dart';
+import 'package:milki_mobile/data/support_repository.dart';
 
 /// Contract test: the mobile data layer against the running stack (not part of the default run).
 ///
@@ -123,4 +125,37 @@ void main() {
     await buyer.auth.logout();
     expect(AppConfig.apiUrl, isNot(contains('10.0.2.2')));
   }, skip: live ? false : 'set --dart-define=API_URL to run against the live stack', timeout: const Timeout(Duration(minutes: 4)));
+
+  test('support: ticket, live chat over /support, resolution and rating', () async {
+    final citizen = await Session.signIn('citizen@milki.dev', '+255712000001');
+    final agent = await Session.signIn('support@milki.dev', '+255716000001');
+    final support = SupportRepository(citizen.api);
+
+    expect((await support.articles(q: 'transfer')).map((a) => a.slug), contains('how-to-transfer-land'));
+    final parcelId = (await ParcelRepository(citizen.api).mine()).first.parcelId;
+    final t = await support.create(category: 'TRANSFERS', subject: 'Live test ticket', description: 'Created by the mobile contract test.', parcelId: parcelId, options: WriteOptions(idempotencyKey: newUuid()));
+    expect(t.number, startsWith('MLK-'));
+    expect(t.parcelId, parcelId);
+
+    final chat = SocketSupportChat()..connect(citizen.tokens.accessToken!);
+    await Future<void>.delayed(const Duration(seconds: 1));
+    expect(await chat.join(t.id), isTrue);
+    final reply = chat.events.where((e) => e is MessageEvent).cast<MessageEvent>().first.timeout(const Duration(seconds: 10));
+    final updated = chat.events.where((e) => e is TicketUpdatedEvent).cast<TicketUpdatedEvent>().firstWhere((e) => e.ticket.status == 'RESOLVED').timeout(const Duration(seconds: 10));
+
+    final agentRepo = SupportRepository(agent.api);
+    await agentRepo.send(t.id, 'Habari! This is a live reply.', options: WriteOptions(idempotencyKey: newUuid()));
+    expect((await reply).message.body, 'Habari! This is a live reply.');
+
+    await agent.api.send<Map<String, dynamic>>('PATCH', '/tickets/${t.id}', body: {'status': 'RESOLVED'}, options: WriteOptions(idempotencyKey: newUuid()));
+    expect((await updated).ticket.resolved, isTrue);
+
+    final rated = await support.rate(t.id, 5, 'Fast!', WriteOptions(idempotencyKey: newUuid()));
+    expect(rated.rating?.stars, 5);
+    await support.close(t.id, WriteOptions(idempotencyKey: newUuid()));
+
+    chat.disconnect();
+    await citizen.auth.logout();
+    await agent.auth.logout();
+  }, skip: live ? false : 'set --dart-define=API_URL to run against the live stack', timeout: const Timeout(Duration(minutes: 2)));
 }

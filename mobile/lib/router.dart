@@ -11,6 +11,7 @@ import 'ui/screens/notifications_screen.dart';
 import 'ui/screens/parcel_screens.dart';
 import 'ui/screens/settings_screen.dart';
 import 'ui/screens/shell.dart';
+import 'ui/screens/support_screens.dart';
 import 'ui/screens/transfer_screens.dart';
 import 'ui/screens/verify_screen.dart';
 
@@ -69,7 +70,24 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ]),
           StatefulShellBranch(routes: [GoRoute(path: '/verify', builder: (_, _) => const VerifyScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/help', builder: (_, _) => const HelpScreen())]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/help',
+              builder: (_, _) => const HelpScreen(),
+              routes: [
+                GoRoute(path: 'articles/:slug', builder: (_, s) => ArticleScreen(slug: s.pathParameters['slug']!)),
+                GoRoute(
+                  path: 'tickets',
+                  builder: (_, _) => const MyTicketsScreen(),
+                  routes: [
+                    // "Get help" on parcel/transfer screens passes the context (§11).
+                    GoRoute(path: 'new', builder: (_, s) => NewTicketScreen(parcelId: s.uri.queryParameters['parcelId'], transferId: s.uri.queryParameters['transferId'])),
+                    GoRoute(path: ':ticketId', builder: (_, s) => TicketChatScreen(ticketId: s.pathParameters['ticketId']!)),
+                  ],
+                ),
+              ],
+            ),
+          ]),
         ],
       ),
     ],

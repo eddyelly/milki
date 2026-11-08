@@ -542,6 +542,51 @@ Do not animate data tables or anything a user reads repeatedly in long sessions.
 
 **Admin metrics:** open tickets, average first response time, average resolution time, CSAT trend and tickets by category.
 
+**Support decisions (Phase 8):**
+- **Backend modules:** `kb` (help centre) and `support` (tickets, messages, canned responses, escalations, metrics, Socket.IO namespace). All off-chain: support never touches the ledger.
+  - Collections: `kb_categories`, `kb_articles`, `kb_votes`, `tickets`, `ticket_messages`, `canned_responses`, `escalations`, `counters` (ticket numbers `MLK-000123`).
+  - Soft delete everywhere (`deletedAt`). KB articles and canned responses are managed by `SUPPORT_AGENT` and `SYSTEM_ADMIN`. Only `SYSTEM_ADMIN` soft-deletes tickets.
+  - Every write is idempotent and audited (`support.*`, `kb.*`).
+- **Help centre:** reading and "Was this helpful?" votes are public.
+  - One vote per reader: the user ID, or a salted IP hash when signed out. Changing a vote moves it.
+  - Articles store `{en, sw}` for title and body, both required. Search uses a Mongo text index over both languages.
+  - Bodies use a tiny Markdown subset (paragraphs, `- ` lists, `**bold**`), rendered as elements on web and mobile, never as HTML.
+- **SLA** by priority (first response / resolution):
+  - URGENT 1 h / 8 h, HIGH 4 h / 24 h, NORMAL 24 h / 72 h, LOW 72 h / 7 d.
+  - The timer is accent from 75% of the window and danger once breached. It shows icon + words, not colour alone.
+  - Changing priority recalculates the due dates from creation; reopening restarts the resolution clock.
+- **Status rules:**
+  - An agent's first public reply sets `firstResponseAt` and moves OPEN → IN_PROGRESS, auto-assigning the agent if nobody has the ticket.
+  - A requester's reply to AWAITING_USER moves it back to IN_PROGRESS.
+  - Agents follow the transition table in `ticket.service.ts`. CLOSED is final, except the requester's 7-day reopen after resolution.
+  - Messages can be edited or deleted by their author for 5 minutes (soft delete).
+- **Live chat:** Socket.IO namespace `/support` (Redis adapter) with rooms `ticket:<id>` and `ticket:<id>:staff`; internal notes and their typing go to the staff room only.
+  - Messages are written over REST (idempotent, audited) and fanned out on the socket.
+  - The socket carries `typing`, `read`, `message:new|updated|deleted`, `ticket:updated`, `queue:updated` and `presence`. Presence is derived from connected staff sockets via `fetchSockets`, so it works across instances.
+  - Offline fallback: when the requester is not in the ticket room, an agent reply becomes an in-app/push notification (`support.reply`, en/sw) plus an email if the user has one. Resolution sends `support.resolved`, asking for a rating.
+- **Escalate to officer:** creates an `escalations` task.
+  - `LAND_OFFICER`s are notified and see it under **Escalations** (web). Their answer is added to the ticket as an internal note.
+  - One open escalation per ticket.
+- **Agent context panel:** `GET /tickets/:id/context` (staff only, `meta.readOnly`). It returns the requester's profile, parcels and transfers from the caches, and previous tickets, with links to the read-only parcel and transfer pages.
+- **Confirmation tiers:**
+  - T1: creating or editing tickets, articles and canned responses; claim and assign; escalate; rate; reopen; edit or delete a message.
+  - T2 (typed identifier): close a ticket (its number), delete an article or canned response, unpublish an article.
+  - **Exception: sending a chat message has no dialog.** The Send button is the explicit action and the 5-minute edit/delete window is the undo. A confirmation on every chat line would make live chat unusable.
+  - Read receipts and help votes are UI state or feedback, like notification read receipts.
+- **Web:**
+  - `/support` queue: tabs, filters, SLA-first sort, live refresh.
+  - `/support/[ticketId]` workspace: chat with spring-in bubbles, typing dots and presence; reply/internal-note toggle; canned-response picker; attachments; ticket controls with a confirmed diff; read-only context.
+  - `/support/canned`, `/help` (reading, en/sw toggle), `/help/manage`, `/escalations`, and support KPIs and charts on the dashboard.
+  - The overview stats include `support.{unassigned, openTickets, openEscalations}` for nav badges.
+- **Mobile:**
+  - The Help tab now shows the knowledge base, **Talk to a person**, My tickets, New ticket (T1, with optional attachment), and the ticket chat. The chat has live bubbles, typing dots, agent presence, ✓✓ read receipts, rate (stars) and reopen.
+  - "Get help" buttons on the parcel and transfer screens pre-attach `parcelId` / `transferId`.
+  - Support notifications deep-link to the chat.
+- **Tests:**
+  - Backend `test/support.test.ts`: KB, tickets, SLA, attachments, escalations, metrics, and the `/support` namespace with real Socket.IO clients.
+  - Web `test/support.test.tsx`: SLA timer, ticket badge, Markdown renderer.
+  - Mobile `test/support_test.dart`, plus a live contract test that chats with an agent over `/support`.
+
 ---
 
 ## 12. Backend conventions

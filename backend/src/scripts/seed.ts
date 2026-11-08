@@ -14,6 +14,7 @@ import type { Role } from '../core/roles';
 import { hashPassword } from '../modules/auth/auth.service';
 import { User } from '../modules/users/user.model';
 import { ensureLedgerIdentity, newUserId } from '../modules/users/user.service';
+import { seedSupport } from './seed-support';
 
 if (env.NODE_ENV === 'production') {
   throw new Error('Refusing to seed demo accounts in production.');
@@ -65,6 +66,10 @@ async function main(): Promise<void> {
     const enrolled = env.FABRIC_ENABLED ? await ensureLedgerIdentity(user) : false;
     logger.info({ role: s.role, email: s.email, userId: user.userId, ledgerIdentity: enrolled }, 'seeded user');
   }
+
+  const idOf = async (email: string) => (await User.findOne({ email }, { userId: 1 }).lean())!.userId;
+  const support = await seedSupport({ citizen: await idOf('citizen@milki.dev'), buyer: await idOf('buyer@milki.dev'), agent: await idOf('support@milki.dev') });
+  logger.info(support, 'seeded help centre and support demo data');
 
   closeGatewayPool();
   await disconnectDatastores();

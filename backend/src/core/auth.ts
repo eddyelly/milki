@@ -110,6 +110,14 @@ export const requireReauth: RequestHandler = async (req: Request, _res: Response
 // ---------------------------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------------------------
+/** Public routes that behave differently for signed-in staff (e.g. the help centre showing drafts). */
+export const optionalAuth: RequestHandler = (req, _res, next) => {
+  const header = req.header('authorization') ?? '';
+  const user = header.startsWith('Bearer ') ? verifyAccessToken(header.slice(7)) : null;
+  if (user) req.user = user;
+  next();
+};
+
 export const requireAuth: RequestHandler = (req, _res, next) => {
   const header = req.header('authorization') ?? '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';

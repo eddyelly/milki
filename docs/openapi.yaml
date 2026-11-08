@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Milki API
-  version: 0.7.0
+  version: 0.8.0
   description: |
     Decentralized land transfer system on Hyperledger Fabric (Ministry of Lands, Tanzania).
 
@@ -30,6 +30,8 @@ tags:
   - name: Ledger
   - name: Health
   - name: Verify
+  - name: Help centre
+  - name: Support
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -308,6 +310,108 @@ paths:
         '200': { description: 'data = { documentId, match, status, version, latestDocumentId, parcelId, documentType, sha256, verifiedAt }' }
         '404': { $ref: '#/components/responses/Error' }
 
+  /kb/categories:
+    get: { tags: [Help centre], summary: 'Categories with published article counts (public)', responses: { '200': { description: OK } } }
+    post: { tags: [Help centre], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Create a category (SUPPORT_AGENT, SYSTEM_ADMIN; T1). Body: slug, name (en/sw), icon, order', responses: { '201': { description: Created }, '409': { $ref: '#/components/responses/Error' } } }
+  /kb/categories/{id}:
+    patch: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Update a category (T1)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Soft-delete an empty category (T2; 409 CATEGORY_NOT_EMPTY)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /kb/articles:
+    get:
+      tags: [Help centre]
+      summary: 'Search articles (public: published only; editors may pass status=DRAFT|ALL)'
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Full-text in English and Swahili }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string, enum: [PUBLISHED, DRAFT, ALL] } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { '200': { description: 'Articles: slug, categorySlug, title (en/sw), body (en/sw), tags, status, helpfulYes, helpfulNo, views' } }
+    post: { tags: [Help centre], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Create an article (T1). Body: slug, categorySlug, title (en/sw), body (en/sw), tags, status', responses: { '201': { description: Created } } }
+  /kb/articles/{slug}:
+    get: { tags: [Help centre], summary: 'Read an article (counts a view)', parameters: [{ name: slug, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } } }
+  /kb/articles/{slug}/vote:
+    post: { tags: [Help centre], summary: '"Was this helpful?" — one vote per reader (user, or hashed IP when signed out). Body: helpful (boolean)', parameters: [{ name: slug, in: path, required: true, schema: { type: string } }], responses: { '200': { description: 'helpful, helpfulYes, helpfulNo' } } }
+  /kb/articles/{id}:
+    patch: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Update / publish / unpublish an article (T1; unpublish is T2 in the UI)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Soft-delete an article (T2)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets:
+    get:
+      tags: [Support]
+      security: [{ bearer: [] }]
+      summary: 'List tickets. Users see their own; SUPPORT_AGENT / SYSTEM_ADMIN see the queue.'
+      parameters:
+        - { name: status, in: query, schema: { type: string }, description: 'Comma-separated: OPEN, IN_PROGRESS, AWAITING_USER, RESOLVED, CLOSED' }
+        - { name: priority, in: query, schema: { type: string }, description: 'Comma-separated: LOW, NORMAL, HIGH, URGENT' }
+        - { name: category, in: query, schema: { type: string, enum: [GETTING_STARTED, TRANSFERS, DOCUMENTS, MORTGAGES, ACCOUNT, OTHER] } }
+        - { name: assignee, in: query, schema: { type: string }, description: 'me | unassigned | userId (staff)' }
+        - { name: tag, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string }, description: 'Ticket number, subject, parcel or transfer ID' }
+        - { name: sort, in: query, schema: { type: string, enum: ['-updatedAt', updatedAt, '-createdAt', createdAt, sla, priority, '-lastMessageAt'] } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { '200': { description: 'Tickets with sla (target, dueAt, state OK|WARNING|BREACHED|MET, elapsed), requester, assignee' } }
+    post:
+      tags: [Support]
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      summary: 'Open a ticket (T1). JSON or multipart (optional file: PDF/JPEG/PNG up to 10 MB). Numbers look like MLK-000123.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, subject, description]
+              properties:
+                category: { type: string, enum: [GETTING_STARTED, TRANSFERS, DOCUMENTS, MORTGAGES, ACCOUNT, OTHER] }
+                priority: { type: string, enum: [LOW, NORMAL, HIGH, URGENT], default: NORMAL }
+                subject: { type: string, maxLength: 140 }
+                description: { type: string, maxLength: 5000 }
+                parcelId: { type: string, description: 'From a "Get help" button; citizens may only link their own' }
+                transferId: { type: string }
+      responses: { '201': { description: Created }, '403': { $ref: '#/components/responses/Error' } }
+  /tickets/{id}:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: Ticket detail, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } } }
+    patch: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: status, priority, assigneeId, tags (T1). Invalid transitions return 409 INVALID_STATE', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Support], security: [{ bearer: [] }], summary: 'SYSTEM_ADMIN soft delete (T2)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/claim:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: assign to yourself (409 ALREADY_ASSIGNED if someone else has it)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/close:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Requester or staff closes (T2)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/reopen:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Requester reopens within 7 days of resolution (409 REOPEN_WINDOW_PASSED)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/rating:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'CSAT: stars 1–5 and optional comment, once resolved', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/context:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff, read-only: requester profile, parcels, transfers (cache) and previous tickets', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: 'meta.readOnly = true' } } }
+  /tickets/{id}/escalate:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: create an internal task for LAND_OFFICER. Body: note', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '201': { description: Created }, '409': { $ref: '#/components/responses/Error' } } }
+  /tickets/{id}/messages:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'Messages (internal notes only for staff)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Send a message, or an internal note (staff). JSON (body, internal) or multipart with file. Fanned out on /support; offline requesters get push + email.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '201': { description: Created }, '409': { $ref: '#/components/responses/Error' } } }
+  /tickets/{id}/messages/{messageId}:
+    patch: { tags: [Support], security: [{ bearer: [] }], summary: 'Edit your own message within 5 minutes (409 EDIT_WINDOW_PASSED)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { name: messageId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Support], security: [{ bearer: [] }], summary: 'Delete your own message within 5 minutes (soft)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { name: messageId, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /tickets/{id}/read:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'Read receipt (UI state; no confirmation). Emits read on /support.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /tickets/{id}/attachments/{sha}:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: Download an attachment, parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { name: sha, in: path, required: true, schema: { type: string } }], responses: { '200': { description: File } } }
+  /support/presence:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'How many agents are online (live chat)', responses: { '200': { description: agentsOnline } } }
+  /support/agents:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: assignable agents', responses: { '200': { description: OK } } }
+  /support/canned:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: canned responses (q filter)', responses: { '200': { description: OK } } }
+    post: { tags: [Support], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Staff: create (title, body, tags) — T1', responses: { '201': { description: Created } } }
+  /support/canned/{id}:
+    patch: { tags: [Support], security: [{ bearer: [] }], summary: Update (T1), parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+    delete: { tags: [Support], security: [{ bearer: [] }], summary: Soft delete (T2), parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /support/escalations:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'LAND_OFFICER, REGISTRAR and staff: escalations (status OPEN|DONE|ALL)', responses: { '200': { description: OK } } }
+  /support/escalations/{id}/done:
+    post: { tags: [Support], security: [{ bearer: [] }], summary: 'LAND_OFFICER / REGISTRAR answers with a resolution (added as an internal note)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
+  /support/metrics:
+    get: { tags: [Support], security: [{ bearer: [] }], summary: 'Open tickets, SLA breaches, average first response / resolution, CSAT trend, tickets by category (days=30)', responses: { '200': { description: OK } } }
   /parcels:
     get:
       tags: [Parcels]

@@ -284,13 +284,15 @@ class DocumentRef {
 }
 
 class NotificationItem {
-  const NotificationItem({required this.id, required this.type, required this.title, required this.body, this.parcelId, this.transferId, this.readAt, this.createdAt});
+  const NotificationItem({required this.id, required this.type, required this.title, required this.body, this.parcelId, this.transferId, this.ticketId, this.readAt, this.createdAt});
   final String id;
   final String type;
   final String title;
   final String body;
   final String? parcelId;
   final String? transferId;
+  /// Support replies and resolutions deep-link to the ticket chat.
+  final String? ticketId;
   final DateTime? readAt;
   final DateTime? createdAt;
 
@@ -303,6 +305,7 @@ class NotificationItem {
       body: _s(j['body']),
       parcelId: d['parcelId'] as String?,
       transferId: d['transferId'] as String?,
+      ticketId: d['ticketId'] as String?,
       readAt: _date(j['readAt']),
       createdAt: _date(j['createdAt']),
     );

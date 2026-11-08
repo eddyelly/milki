@@ -13,6 +13,8 @@ import { errorHandler, notFoundHandler } from './core/errors';
 import { logger } from './core/logger';
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
+import { kbRouter } from './modules/kb/kb.routes';
+import { supportRouter, ticketRouter } from './modules/support/support.routes';
 import { ledgerRouter } from './modules/ledger/ledger.routes';
 import { disputeRouter, parcelDisputeRouter } from './modules/disputes/dispute.routes';
 import { documentRouter } from './modules/documents/document.routes';
@@ -70,6 +72,9 @@ export function createApp(): Express {
   api.use('/devices', deviceRouter);
   api.use('/users', userRouter);
   api.use('/verify', verifyRouter);
+  api.use('/kb', kbRouter);
+  api.use('/tickets', ticketRouter);
+  api.use('/support', supportRouter);
   app.use('/api/v1', api);
 
   const spec = loadOpenApi();

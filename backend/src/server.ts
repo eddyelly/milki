@@ -7,10 +7,11 @@ import { closeGatewayPool, initGatewayPool } from './core/fabric/gateway';
 import { serviceIdentity } from './core/fabric/wallet';
 import { logger } from './core/logger';
 import { startEmailWorker, stopEmailWorker } from './core/notify';
-import { attachSocket, closeSocket } from './core/socket';
+import { attachSocket, closeSocket, onSocketAttached } from './core/socket';
 import { ensureBucket } from './core/storage';
 import { registerLedgerListeners } from './modules/ledger/ledger.listeners';
 import { startNotificationWorker, stopNotificationWorker } from './modules/notifications/notification.service';
+import { attachSupportNamespace } from './modules/support/support.socket';
 
 async function main(): Promise<void> {
   await connectDatastores();
@@ -30,6 +31,7 @@ async function main(): Promise<void> {
   }
 
   const server = createServer(createApp());
+  onSocketAttached(attachSupportNamespace);
   attachSocket(server);
   server.listen(env.PORT, () => logger.info({ port: env.PORT }, `Milki API listening on http://localhost:${env.PORT}`));
 

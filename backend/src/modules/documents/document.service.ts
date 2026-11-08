@@ -49,7 +49,7 @@ interface LedgerVerification {
   documentType: string;
 }
 
-function sniff(file: UploadedFile): { mime: string; ext: string } {
+export function sniff(file: UploadedFile): { mime: string; ext: string } {
   const sig = SIGNATURES.find((s) => s.magic.every((b, i) => file.buffer[i] === b));
   if (!sig) throw new AppError(415, 'UNSUPPORTED_FILE', 'Only PDF, JPEG and PNG files can be uploaded.');
   if (file.mimetype !== sig.mime) {

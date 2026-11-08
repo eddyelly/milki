@@ -113,6 +113,7 @@ class ParcelDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(parcelId, style: monoStyle(size: 16, weight: FontWeight.w600, color: context.colors.onSurface)),
         actions: [
+          IconButton(key: const Key('get-help'), tooltip: l.getHelp, icon: const Icon(Icons.support_agent), onPressed: () => context.go('/help/tickets/new?parcelId=$parcelId')),
           if (parcel.hasValue)
             IconButton(key: const Key('share-proof'), tooltip: l.shareProof, icon: const Icon(Icons.qr_code_2), onPressed: () => _showProof(context, parcel.value!)),
         ],

@@ -14,6 +14,7 @@ import '../validators.dart';
 import '../widgets/common.dart';
 import '../widgets/confirm_action.dart';
 import '../widgets/documents.dart';
+import '../widgets/file_pick.dart';
 import '../widgets/timelines.dart';
 
 // ---------------------------------------------------------------------------------------------- list
@@ -124,7 +125,10 @@ class TransferDetailScreen extends ConsumerWidget {
     final docs = ref.watch(transferDocumentsProvider(transferId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(transferId, style: monoStyle(size: 15, weight: FontWeight.w600, color: context.colors.onSurface))),
+      appBar: AppBar(
+        title: Text(transferId, style: monoStyle(size: 15, weight: FontWeight.w600, color: context.colors.onSurface)),
+        actions: [IconButton(key: const Key('get-help'), tooltip: l.getHelp, icon: const Icon(Icons.support_agent), onPressed: () => context.go('/help/tickets/new?transferId=$transferId'))],
+      ),
       body: transfer.when(
         loading: () => const SkeletonList(count: 3, height: 140),
         error: (e, _) => ErrorState(error: e, onRetry: () => ref.invalidate(transferProvider(transferId))),
@@ -254,7 +258,7 @@ class TransferDetailScreen extends ConsumerWidget {
       confirmLabel: l.cancelTransfer,
       onConfirm: (ctx) => ref.read(transferRepositoryProvider).cancel(t.transferId, reason.text.trim(), ctx.options),
     );
-    reason.dispose();
+    // Not disposed here: the sheet's exit animation still renders the field; it is collected with the sheet.
   }
 }
 
@@ -444,12 +448,6 @@ class PickedFile {
   final String mimeType;
 }
 
-String mimeFor(String name) {
-  final n = name.toLowerCase();
-  if (n.endsWith('.pdf')) return 'application/pdf';
-  if (n.endsWith('.png')) return 'image/png';
-  return 'image/jpeg';
-}
 
 /// Choose type + file, then T3: only the SHA-256 is recorded on the ledger (CLAUDE.md rule 5).
 Future<void> uploadTransferDocument(BuildContext context, WidgetRef ref, Transfer t) async {

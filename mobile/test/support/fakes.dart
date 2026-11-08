@@ -13,6 +13,7 @@ import 'package:milki_mobile/core/api/api_client.dart';
 import 'package:milki_mobile/core/api/token_store.dart';
 import 'package:milki_mobile/core/ledger_events.dart';
 import 'package:milki_mobile/core/reauth.dart';
+import 'package:milki_mobile/core/support_chat.dart';
 import 'package:milki_mobile/core/theme/milki_theme.dart';
 import 'package:milki_mobile/data/models.dart';
 import 'package:milki_mobile/l10n/app_localizations.dart';
@@ -166,4 +167,41 @@ Future<void> settle(WidgetTester tester, [int rounds = 6]) async {
     await tester.pump(const Duration(milliseconds: 50));
   }
   await tester.pumpAndSettle();
+}
+
+class FakeSupportChat implements SupportChat {
+  final controller = StreamController<ChatEvent>.broadcast();
+  final presenceController = StreamController<int>.broadcast();
+  final joined = <String>[];
+  final typingSent = <bool>[];
+  int? presenceValue;
+
+  void emit(ChatEvent e) => controller.add(e);
+
+  @override
+  Stream<ChatEvent> get events => controller.stream;
+  @override
+  Stream<int> get presence => presenceController.stream;
+  @override
+  int? get lastPresence => presenceValue;
+  @override
+  void connect(String accessToken) {}
+  @override
+  void disconnect() {}
+  @override
+  Future<bool> join(String ticketId) async {
+    joined.add(ticketId);
+    return true;
+  }
+
+  @override
+  void leave(String ticketId) {}
+  @override
+  void typing(String ticketId, bool typing) => typingSent.add(typing);
+}
+
+/// Signed in as the seeded citizen without touching the network.
+class FakeSession extends SessionController {
+  @override
+  SessionState build() => SignedIn(User.fromJson(userJson()));
 }

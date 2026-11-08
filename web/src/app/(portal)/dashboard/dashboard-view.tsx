@@ -1,11 +1,12 @@
 'use client';
 
-import { ArrowRight, ArrowLeftRight, BadgeCheck, Handshake, Landmark, Map as MapIcon, Receipt, TriangleAlert, X } from 'lucide-react';
+import { ArrowRight, ArrowLeftRight, BadgeCheck, Handshake, Headset, Landmark, Map as MapIcon, Receipt, ShieldAlert, TriangleAlert, X } from 'lucide-react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { CountUp, KpiCard } from '@/components/kpi-card';
+import { SupportMetrics } from '@/components/support/support-metrics';
 import { EmptyState, ErrorState, PageHeader } from '@/components/page';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,14 @@ export function DashboardView() {
         ]
       : role === 'REGISTRAR'
         ? [{ label: 'Awaiting your approval', value: o?.queues.awaitingApproval ?? 0, icon: BadgeCheck, href: '/transfers?status=OFFICER_VERIFIED' }]
-        : [];
+        : role === 'SUPPORT_AGENT'
+          ? [
+              { label: 'Unassigned tickets', value: o?.support?.unassigned ?? 0, icon: Headset, href: '/support' },
+              { label: 'Open tickets', value: o?.support?.openTickets ?? 0, icon: ShieldAlert, href: '/support' },
+            ]
+          : [];
+  const escalations = (role === 'LAND_OFFICER' || role === 'REGISTRAR') && (o?.support?.openEscalations ?? 0) > 0;
+  if (escalations) queue.push({ label: 'Escalations from support', value: o?.support?.openEscalations ?? 0, icon: ShieldAlert, href: '/escalations' });
 
   const openTransfers = o
     ? (o.transfers.byStatus.INITIATED ?? 0) + (o.transfers.byStatus.BUYER_ACCEPTED ?? 0) + (o.transfers.byStatus.PAYMENTS_CONFIRMED ?? 0) + (o.transfers.byStatus.OFFICER_VERIFIED ?? 0)
@@ -188,6 +196,8 @@ export function DashboardView() {
               </CardContent>
             </Card>
           </section>
+
+          {(role === 'SUPPORT_AGENT' || role === 'SYSTEM_ADMIN') && <SupportMetrics />}
 
           <RecentParcels />
         </div>

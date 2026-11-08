@@ -202,6 +202,8 @@ export interface Overview {
   parcels: { total: number; byStatus: Partial<Record<ParcelStatus, number>>; byRegion: { region: string; count: number }[] };
   transfers: { total: number; byStatus: Partial<Record<TransferStatus, number>>; monthly: { month: string; started: number; completed: number }[] };
   queues: { awaitingPayments: number; awaitingVerification: number; awaitingApproval: number };
+  /** Optional so an older cached overview (60 s Redis TTL) still type-checks. */
+  support?: { unassigned: number; openTickets: number; openEscalations: number };
   generatedAt: string;
 }
 

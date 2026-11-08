@@ -454,7 +454,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get helpSubtitle =>
-      'Majibu ya maswali ya kawaida. Msaada wa moja kwa moja unakuja hivi karibuni.';
+      'Majibu ya maswali ya kawaida, na mtu unapomhitaji.';
 
   @override
   String get faqTransferQ => 'Nawezaje kuhamisha ardhi yangu?';
@@ -709,4 +709,217 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get copied => 'Imenakiliwa';
+
+  @override
+  String get aboutThis => 'Kuhusu';
+
+  @override
+  String agentHelping(String name) {
+    return '$name anakusaidia';
+  }
+
+  @override
+  String get agentTyping => 'Huduma kwa wateja wanaandika';
+
+  @override
+  String get agentsOffline =>
+      'Hakuna wakala mtandaoni sasa. Tutajibu hapa na kukujulisha kwa arifa na barua pepe.';
+
+  @override
+  String get agentsOnlineNow =>
+      'Wakala yuko mtandaoni — majibu huchukua dakika chache.';
+
+  @override
+  String get attachFile => 'Ambatisha faili';
+
+  @override
+  String get catAccount => 'Akaunti';
+
+  @override
+  String get catDocuments => 'Nyaraka';
+
+  @override
+  String get catGettingStarted => 'Kuanza';
+
+  @override
+  String get catMortgages => 'Rehani';
+
+  @override
+  String get catOther => 'Mengineyo';
+
+  @override
+  String get catTransfers => 'Uhamisho';
+
+  @override
+  String get category => 'Aina';
+
+  @override
+  String get closeTicket => 'Funga tiketi';
+
+  @override
+  String get closeTicketBody =>
+      'Mazungumzo yanaisha. Unaweza kuifungua tena ndani ya siku 7 baada ya kutatuliwa.';
+
+  @override
+  String get closeTicketQ => 'Funga tiketi hii?';
+
+  @override
+  String get commentOptional => 'Maoni (si lazima)';
+
+  @override
+  String get deleteMessage => 'Futa ujumbe';
+
+  @override
+  String get deleteMessageBody =>
+      'Utaondolewa kwa kila mtu kwenye mazungumzo haya.';
+
+  @override
+  String get deleteMessageQ => 'Futa ujumbe huu?';
+
+  @override
+  String get describeProblem => 'Eleza tatizo';
+
+  @override
+  String get descriptionTooShort => 'Eleza tatizo kwa sentensi moja au mbili.';
+
+  @override
+  String get editMessage => 'Hariri ujumbe';
+
+  @override
+  String get edited => 'imehaririwa';
+
+  @override
+  String get getHelp => 'Pata msaada';
+
+  @override
+  String get howDidWeDo => 'Imetatuliwa. Tumefanyaje?';
+
+  @override
+  String get messageDeleted => 'Ujumbe umefutwa';
+
+  @override
+  String get myTickets => 'Tiketi zangu za msaada';
+
+  @override
+  String get newTicket => 'Tiketi mpya';
+
+  @override
+  String get no => 'Hapana';
+
+  @override
+  String get noTickets => 'Bado hakuna tiketi';
+
+  @override
+  String get noTicketsBody => 'Uliza swali na wakala wa huduma atajibu hapa.';
+
+  @override
+  String openTickets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tiketi $count zilizo wazi',
+      one: 'Tiketi 1 iliyo wazi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get priority => 'Kipaumbele';
+
+  @override
+  String get priorityHigh => 'Juu';
+
+  @override
+  String get priorityNormal => 'Kawaida';
+
+  @override
+  String get priorityUrgent => 'Dharura';
+
+  @override
+  String get rateTicket => 'Kadiria msaada huu';
+
+  @override
+  String get remove => 'Ondoa';
+
+  @override
+  String get reopen => 'Fungua tena';
+
+  @override
+  String get reopenTicketBody => 'Tiketi inarudi kwa timu ya huduma.';
+
+  @override
+  String get reopenTicketQ => 'Fungua tiketi hii tena?';
+
+  @override
+  String get save => 'Hifadhi';
+
+  @override
+  String get seen => 'Imeonekana';
+
+  @override
+  String get send => 'Tuma';
+
+  @override
+  String get sendTicket => 'Tuma kwa huduma kwa wateja';
+
+  @override
+  String get stillNeedHelp => 'Bado unahitaji msaada? Wasiliana nasi';
+
+  @override
+  String get subject => 'Kichwa';
+
+  @override
+  String get subjectTooShort => 'Ipe tiketi kichwa kifupi.';
+
+  @override
+  String get supportTeam => 'Huduma kwa wateja Milki';
+
+  @override
+  String get talkToUs => 'Ongea na mtu';
+
+  @override
+  String get talkToUsBody => 'Fungua tiketi au ongea na huduma kwa wateja.';
+
+  @override
+  String get thanksFeedback => 'Asante kwa maoni!';
+
+  @override
+  String get thanksForRating => 'Asante kwa kutukadiria.';
+
+  @override
+  String get ticketAwaitingYou => 'Inakusubiri';
+
+  @override
+  String get ticketClosed => 'Imefungwa';
+
+  @override
+  String get ticketInProgress => 'Inashughulikiwa';
+
+  @override
+  String get ticketOpen => 'Wazi';
+
+  @override
+  String get ticketPromise =>
+      'Wakala wa huduma atajibu hapa. Majibu pia yanakuja kama arifa.';
+
+  @override
+  String get ticketResolved => 'Imetatuliwa';
+
+  @override
+  String get transfer => 'Uhamisho';
+
+  @override
+  String get typeMessage => 'Andika ujumbe';
+
+  @override
+  String get wasHelpful => 'Je, hii imesaidia?';
+
+  @override
+  String get yes => 'Ndiyo';
+
+  @override
+  String get yourRating => 'Ukadiriaji wako';
+
+  @override
+  String get describeProblemHint => 'Nini kilitokea? Ulijaribu nini?';
 }

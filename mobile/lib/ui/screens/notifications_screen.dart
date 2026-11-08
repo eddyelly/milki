@@ -14,6 +14,7 @@ IconData notificationIcon(String type) => switch (type) {
       final t when t.contains('Document') => Icons.description_outlined,
       final t when t.contains('Encumbrance') => Icons.account_balance_outlined,
       final t when t.contains('Dispute') => Icons.gavel,
+      final t when t.startsWith('support.') => Icons.support_agent,
       _ => Icons.landscape_outlined,
     };
 
@@ -22,7 +23,9 @@ Future<void> openNotification(BuildContext context, WidgetRef ref, NotificationI
   if (n.readAt == null) {
     ref.read(notificationRepositoryProvider).markRead(n.id).then((_) => ref.invalidate(notificationsProvider)).ignore();
   }
-  if (n.transferId != null) {
+  if (n.ticketId != null) {
+    context.go('/help/tickets/${n.ticketId}');
+  } else if (n.transferId != null) {
     context.go('/transfers/${n.transferId}');
   } else if (n.parcelId != null) {
     context.go('/parcels/${n.parcelId}');

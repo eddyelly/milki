@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Bell, FilePlus2, LayoutDashboard, type LucideIcon, Map, ScanSearch } from 'lucide-react';
+import { ArrowLeftRight, Bell, BookOpen, FilePlus2, Headset, LayoutDashboard, type LucideIcon, Map, ScanSearch, ShieldAlert } from 'lucide-react';
 import type { Overview, Role } from '@/lib/types';
 
 export interface NavItem {
@@ -27,6 +27,14 @@ export const NAV: { group: string; items: NavItem[] }[] = [
         badge: (o, role) =>
           role === 'LAND_OFFICER' ? o.queues.awaitingPayments + o.queues.awaitingVerification : role === 'REGISTRAR' ? o.queues.awaitingApproval : 0,
       },
+    ],
+  },
+  {
+    group: 'Support',
+    items: [
+      { title: 'Support queue', href: '/support', icon: Headset, roles: ['SUPPORT_AGENT', 'SYSTEM_ADMIN'], badge: (o) => o.support?.unassigned ?? 0 },
+      { title: 'Escalations', href: '/escalations', icon: ShieldAlert, roles: ['LAND_OFFICER', 'REGISTRAR', 'SUPPORT_AGENT', 'SYSTEM_ADMIN'], badge: (o, role) => (role === 'LAND_OFFICER' || role === 'REGISTRAR' ? (o.support?.openEscalations ?? 0) : 0) },
+      { title: 'Help centre', href: '/help', icon: BookOpen, roles: STAFF },
     ],
   },
   {

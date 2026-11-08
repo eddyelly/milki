@@ -9,8 +9,11 @@ import '../core/api/token_store.dart';
 import '../core/ledger_events.dart';
 import '../core/push.dart';
 import '../core/reauth.dart';
+import '../core/support_chat.dart';
 import '../data/models.dart';
 import '../data/repositories.dart';
+import '../data/support_models.dart';
+import '../data/support_repository.dart';
 
 // --------------------------------------------------------------------------------------------- core
 final tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());
@@ -29,6 +32,14 @@ final ledgerEventsProvider = Provider<LedgerEvents>((ref) {
   final events = SocketLedgerEvents(ref.watch(ledgerRepositoryProvider));
   ref.onDispose(events.disconnect);
   return events;
+});
+
+final supportRepositoryProvider = Provider((ref) => SupportRepository(ref.watch(apiClientProvider)));
+
+final supportChatProvider = Provider<SupportChat>((ref) {
+  final chat = SocketSupportChat();
+  ref.onDispose(chat.disconnect);
+  return chat;
 });
 
 final reauthenticatorProvider = Provider<Reauthenticator>((ref) => DeviceReauthenticator(ref.watch(authRepositoryProvider)));
@@ -70,7 +81,10 @@ class SessionController extends Notifier<SessionState> {
 
   void _onSignedIn(User user) {
     final token = ref.read(tokenStoreProvider).accessToken;
-    if (token != null) ref.read(ledgerEventsProvider).connect(token);
+    if (token != null) {
+      ref.read(ledgerEventsProvider).connect(token);
+      ref.read(supportChatProvider).connect(token);
+    }
     unawaited(Push.register(ref.read(notificationRepositoryProvider)));
     state = SignedIn(user);
   }
@@ -80,6 +94,7 @@ class SessionController extends Notifier<SessionState> {
 
   Future<void> signOut() async {
     ref.read(ledgerEventsProvider).disconnect();
+    ref.read(supportChatProvider).disconnect();
     await Push.unregister();
     await ref.read(authRepositoryProvider).logout();
     state = const SignedOut();
@@ -87,6 +102,7 @@ class SessionController extends Notifier<SessionState> {
 
   void expired() {
     ref.read(ledgerEventsProvider).disconnect();
+    ref.read(supportChatProvider).disconnect();
     state = const SignedOut(expired: true);
   }
 }
@@ -171,3 +187,27 @@ final notificationsProvider = FutureProvider.autoDispose<({List<NotificationItem
   _refreshOnLedgerChange(ref);
   return ref.watch(notificationRepositoryProvider).list();
 });
+
+// ------------------------------------------------------------------------------------------ support
+final kbCategoriesProvider = FutureProvider.autoDispose<List<KbCategory>>((ref) => ref.watch(supportRepositoryProvider).categories());
+
+typedef KbQuery = ({String q, String? category});
+final kbArticlesProvider = FutureProvider.autoDispose.family<List<KbArticle>, KbQuery>(
+  (ref, k) => ref.watch(supportRepositoryProvider).articles(q: k.q.trim().isEmpty ? null : k.q.trim(), category: k.category),
+);
+
+final kbArticleProvider = FutureProvider.autoDispose.family<KbArticle, String>((ref, slug) => ref.watch(supportRepositoryProvider).article(slug));
+
+/// Refreshes when support writes back on /support (ticket updates, new replies).
+void _refreshOnSupportChange(Ref ref, bool Function(ChatEvent e) when) {
+  final sub = ref.watch(supportChatProvider).events.where(when).listen((_) => ref.invalidateSelf());
+  ref.onDispose(sub.cancel);
+}
+
+final myTicketsProvider = FutureProvider.autoDispose<List<Ticket>>((ref) {
+  _refreshOnSupportChange(ref, (e) => e is TicketUpdatedEvent || e is MessageEvent);
+  _refreshOnLedgerChange(ref); // replies to offline users arrive as notifications
+  return ref.watch(supportRepositoryProvider).myTickets();
+});
+
+final ticketProvider = FutureProvider.autoDispose.family<Ticket, String>((ref, id) => ref.watch(supportRepositoryProvider).ticket(id));

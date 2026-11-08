@@ -923,7 +923,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Answers to common questions. Live support arrives soon.'**
+  /// **'Answers to common questions, and a person when you need one.'**
   String get helpSubtitle;
 
   /// No description provided for @faqTransferQ.
@@ -1369,6 +1369,402 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copied'**
   String get copied;
+
+  /// No description provided for @aboutThis.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutThis;
+
+  /// No description provided for @agentHelping.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is helping you'**
+  String agentHelping(String name);
+
+  /// No description provided for @agentTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'Support is typing'**
+  String get agentTyping;
+
+  /// No description provided for @agentsOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No agent online right now. We\'ll reply here and notify you by push and email.'**
+  String get agentsOffline;
+
+  /// No description provided for @agentsOnlineNow.
+  ///
+  /// In en, this message translates to:
+  /// **'An agent is online — replies usually take minutes.'**
+  String get agentsOnlineNow;
+
+  /// No description provided for @attachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a file'**
+  String get attachFile;
+
+  /// No description provided for @catAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get catAccount;
+
+  /// No description provided for @catDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get catDocuments;
+
+  /// No description provided for @catGettingStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started'**
+  String get catGettingStarted;
+
+  /// No description provided for @catMortgages.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgages'**
+  String get catMortgages;
+
+  /// No description provided for @catOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get catOther;
+
+  /// No description provided for @catTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers'**
+  String get catTransfers;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @closeTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Close ticket'**
+  String get closeTicket;
+
+  /// No description provided for @closeTicketBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation ends. You can reopen it for 7 days after it is resolved.'**
+  String get closeTicketBody;
+
+  /// No description provided for @closeTicketQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Close this ticket?'**
+  String get closeTicketQ;
+
+  /// No description provided for @commentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get commentOptional;
+
+  /// No description provided for @deleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get deleteMessage;
+
+  /// No description provided for @deleteMessageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It is removed for everyone in this conversation.'**
+  String get deleteMessageBody;
+
+  /// No description provided for @deleteMessageQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get deleteMessageQ;
+
+  /// No description provided for @describeProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem'**
+  String get describeProblem;
+
+  /// No description provided for @descriptionTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem in a sentence or two.'**
+  String get descriptionTooShort;
+
+  /// No description provided for @editMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit message'**
+  String get editMessage;
+
+  /// No description provided for @edited.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get edited;
+
+  /// No description provided for @getHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Get help'**
+  String get getHelp;
+
+  /// No description provided for @howDidWeDo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solved. How did we do?'**
+  String get howDidWeDo;
+
+  /// No description provided for @messageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get messageDeleted;
+
+  /// No description provided for @myTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'My support tickets'**
+  String get myTickets;
+
+  /// No description provided for @newTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'New ticket'**
+  String get newTicket;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @noTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'No tickets yet'**
+  String get noTickets;
+
+  /// No description provided for @noTicketsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question and a support agent will reply here.'**
+  String get noTicketsBody;
+
+  /// No description provided for @openTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 open ticket} other{{count} open tickets}}'**
+  String openTickets(int count);
+
+  /// No description provided for @priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get priority;
+
+  /// No description provided for @priorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get priorityHigh;
+
+  /// No description provided for @priorityNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get priorityNormal;
+
+  /// No description provided for @priorityUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get priorityUrgent;
+
+  /// No description provided for @rateTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate this help'**
+  String get rateTicket;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @reopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get reopen;
+
+  /// No description provided for @reopenTicketBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The ticket goes back to the support team.'**
+  String get reopenTicketBody;
+
+  /// No description provided for @reopenTicketQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen this ticket?'**
+  String get reopenTicketQ;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @seen.
+  ///
+  /// In en, this message translates to:
+  /// **'Seen'**
+  String get seen;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @sendTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to support'**
+  String get sendTicket;
+
+  /// No description provided for @stillNeedHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Still need help? Contact support'**
+  String get stillNeedHelp;
+
+  /// No description provided for @subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get subject;
+
+  /// No description provided for @subjectTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the ticket a short subject.'**
+  String get subjectTooShort;
+
+  /// No description provided for @supportTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Milki support'**
+  String get supportTeam;
+
+  /// No description provided for @talkToUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk to a person'**
+  String get talkToUs;
+
+  /// No description provided for @talkToUsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a ticket or chat with support.'**
+  String get talkToUsBody;
+
+  /// No description provided for @thanksFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for the feedback!'**
+  String get thanksFeedback;
+
+  /// No description provided for @thanksForRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for rating us.'**
+  String get thanksForRating;
+
+  /// No description provided for @ticketAwaitingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you'**
+  String get ticketAwaitingYou;
+
+  /// No description provided for @ticketClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get ticketClosed;
+
+  /// No description provided for @ticketInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get ticketInProgress;
+
+  /// No description provided for @ticketOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get ticketOpen;
+
+  /// No description provided for @ticketPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'A support agent will reply here. Replies also arrive as notifications.'**
+  String get ticketPromise;
+
+  /// No description provided for @ticketResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get ticketResolved;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @typeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message'**
+  String get typeMessage;
+
+  /// No description provided for @wasHelpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Was this helpful?'**
+  String get wasHelpful;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @yourRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rating'**
+  String get yourRating;
+
+  /// No description provided for @describeProblemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened? What did you try?'**
+  String get describeProblemHint;
 }
 
 class _AppLocalizationsDelegate

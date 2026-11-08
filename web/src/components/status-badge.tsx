@@ -1,17 +1,19 @@
 import { cn } from '@/lib/utils';
 import { PARCEL_STATUS, TRANSFER_STATUS } from '@/lib/status';
+import { TICKET_STATUS, type TicketStatus } from '@/lib/support';
 import type { ParcelStatus, TransferStatus } from '@/lib/types';
 
 type Props =
   | { kind: 'parcel'; status: ParcelStatus; size?: 'sm' | 'md'; className?: string }
-  | { kind: 'transfer'; status: TransferStatus; size?: 'sm' | 'md'; className?: string };
+  | { kind: 'transfer'; status: TransferStatus; size?: 'sm' | 'md'; className?: string }
+  | { kind: 'ticket'; status: TicketStatus; size?: 'sm' | 'md'; className?: string };
 
 /**
  * Status chip: colour + icon + label, never colour alone (CLAUDE.md §9.1).
  * Background is a 12% tint of the status colour so text stays AA-legible in both themes.
  */
 export function StatusBadge(props: Props) {
-  const meta = props.kind === 'parcel' ? PARCEL_STATUS[props.status] : TRANSFER_STATUS[props.status];
+  const meta = props.kind === 'parcel' ? PARCEL_STATUS[props.status] : props.kind === 'transfer' ? TRANSFER_STATUS[props.status] : TICKET_STATUS[props.status];
   if (!meta) return null;
   const Icon = meta.icon;
   const ink = meta.ink ?? meta.color;

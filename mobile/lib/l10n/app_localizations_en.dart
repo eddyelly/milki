@@ -453,7 +453,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSubtitle =>
-      'Answers to common questions. Live support arrives soon.';
+      'Answers to common questions, and a person when you need one.';
 
   @override
   String get faqTransferQ => 'How do I transfer my land?';
@@ -706,4 +706,219 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copied => 'Copied';
+
+  @override
+  String get aboutThis => 'About';
+
+  @override
+  String agentHelping(String name) {
+    return '$name is helping you';
+  }
+
+  @override
+  String get agentTyping => 'Support is typing';
+
+  @override
+  String get agentsOffline =>
+      'No agent online right now. We\'ll reply here and notify you by push and email.';
+
+  @override
+  String get agentsOnlineNow =>
+      'An agent is online — replies usually take minutes.';
+
+  @override
+  String get attachFile => 'Attach a file';
+
+  @override
+  String get catAccount => 'Account';
+
+  @override
+  String get catDocuments => 'Documents';
+
+  @override
+  String get catGettingStarted => 'Getting started';
+
+  @override
+  String get catMortgages => 'Mortgages';
+
+  @override
+  String get catOther => 'Other';
+
+  @override
+  String get catTransfers => 'Transfers';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get closeTicket => 'Close ticket';
+
+  @override
+  String get closeTicketBody =>
+      'The conversation ends. You can reopen it for 7 days after it is resolved.';
+
+  @override
+  String get closeTicketQ => 'Close this ticket?';
+
+  @override
+  String get commentOptional => 'Comment (optional)';
+
+  @override
+  String get deleteMessage => 'Delete message';
+
+  @override
+  String get deleteMessageBody =>
+      'It is removed for everyone in this conversation.';
+
+  @override
+  String get deleteMessageQ => 'Delete this message?';
+
+  @override
+  String get describeProblem => 'Describe the problem';
+
+  @override
+  String get descriptionTooShort =>
+      'Describe the problem in a sentence or two.';
+
+  @override
+  String get editMessage => 'Edit message';
+
+  @override
+  String get edited => 'edited';
+
+  @override
+  String get getHelp => 'Get help';
+
+  @override
+  String get howDidWeDo => 'Solved. How did we do?';
+
+  @override
+  String get messageDeleted => 'Message deleted';
+
+  @override
+  String get myTickets => 'My support tickets';
+
+  @override
+  String get newTicket => 'New ticket';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get noTickets => 'No tickets yet';
+
+  @override
+  String get noTicketsBody =>
+      'Ask a question and a support agent will reply here.';
+
+  @override
+  String openTickets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open tickets',
+      one: '1 open ticket',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get priority => 'Priority';
+
+  @override
+  String get priorityHigh => 'High';
+
+  @override
+  String get priorityNormal => 'Normal';
+
+  @override
+  String get priorityUrgent => 'Urgent';
+
+  @override
+  String get rateTicket => 'Rate this help';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get reopen => 'Reopen';
+
+  @override
+  String get reopenTicketBody => 'The ticket goes back to the support team.';
+
+  @override
+  String get reopenTicketQ => 'Reopen this ticket?';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get seen => 'Seen';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get sendTicket => 'Send to support';
+
+  @override
+  String get stillNeedHelp => 'Still need help? Contact support';
+
+  @override
+  String get subject => 'Subject';
+
+  @override
+  String get subjectTooShort => 'Give the ticket a short subject.';
+
+  @override
+  String get supportTeam => 'Milki support';
+
+  @override
+  String get talkToUs => 'Talk to a person';
+
+  @override
+  String get talkToUsBody => 'Open a ticket or chat with support.';
+
+  @override
+  String get thanksFeedback => 'Thanks for the feedback!';
+
+  @override
+  String get thanksForRating => 'Thanks for rating us.';
+
+  @override
+  String get ticketAwaitingYou => 'Waiting for you';
+
+  @override
+  String get ticketClosed => 'Closed';
+
+  @override
+  String get ticketInProgress => 'In progress';
+
+  @override
+  String get ticketOpen => 'Open';
+
+  @override
+  String get ticketPromise =>
+      'A support agent will reply here. Replies also arrive as notifications.';
+
+  @override
+  String get ticketResolved => 'Resolved';
+
+  @override
+  String get transfer => 'Transfer';
+
+  @override
+  String get typeMessage => 'Type a message';
+
+  @override
+  String get wasHelpful => 'Was this helpful?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get yourRating => 'Your rating';
+
+  @override
+  String get describeProblemHint => 'What happened? What did you try?';
 }

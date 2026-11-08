@@ -4,6 +4,7 @@ import { redis } from '../../core/datastores';
 import { ok } from '../../core/http';
 import { STAFF_ROLES } from '../../core/roles';
 import { ParcelCache } from '../parcels/parcel-cache.model';
+import { Escalation, Ticket } from '../support/support.models';
 import { TransferCache } from '../transfers/transfer-cache.model';
 
 export const statsRouter = Router();
@@ -37,6 +38,11 @@ async function overview() {
     ParcelCache.countDocuments(),
     TransferCache.countDocuments(),
   ]);
+  const [unassigned, openTickets, openEscalations] = await Promise.all([
+    Ticket.countDocuments({ deletedAt: null, assigneeId: null, status: { $in: ['OPEN', 'IN_PROGRESS', 'AWAITING_USER'] } }),
+    Ticket.countDocuments({ deletedAt: null, status: { $in: ['OPEN', 'IN_PROGRESS', 'AWAITING_USER'] } }),
+    Escalation.countDocuments({ status: 'OPEN' }),
+  ]);
   // Every one of the last 6 months appears, even with no activity.
   const months: { month: string; started: number; completed: number }[] = [];
   for (let i = 0; i < 6; i++) {
@@ -54,6 +60,7 @@ async function overview() {
       awaitingVerification: transfersByStatus.PAYMENTS_CONFIRMED ?? 0,
       awaitingApproval: transfersByStatus.OFFICER_VERIFIED ?? 0,
     },
+    support: { unassigned, openTickets, openEscalations },
     generatedAt: new Date().toISOString(),
   };
 }

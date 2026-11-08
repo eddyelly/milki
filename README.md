@@ -83,6 +83,14 @@ flutter test integration_test/app_test.dart \
 
 Sign in as `citizen@milki.dev` (or `buyer@milki.dev`) / `Milki@2026`; the SMS code is in Mailpit. Turn on fingerprint confirmation in Settings to confirm ledger actions with biometrics. Push notifications need `flutterfire configure` (optional; without it the app uses the live socket only).
 
+## Support (Phase 8)
+
+- **Landowners (mobile):** Help tab → search articles (English/Swahili) → *Talk to a person* → live chat with an agent, or a ticket that is answered by push + email when no agent is online. "Get help" on parcel and transfer screens attaches the context.
+- **Agents (web, `support@milki.dev`):** *Support queue* with SLA timers → ticket workspace (live chat, internal notes, canned responses, read-only parcel/transfer context, escalate to a land officer) → *Help centre* to manage articles.
+- **Land officers (web, `officer@milki.dev`):** *Escalations* from support.
+
+`npm run seed` (backend) adds the help-centre articles, canned responses and three demo tickets.
+
 ## Build progress
 
 - [x] 1. Infra
@@ -92,6 +100,6 @@ Sign in as `citizen@milki.dev` (or `buyer@milki.dev`) / `Milki@2026`; the SMS co
 - [x] 5. Transfers and documents
 - [x] 6. Web portal
 - [x] 7. Mobile app
-- [ ] 8. Support
+- [x] 8. Support
 - [ ] 9. Admin and partner API
 - [ ] 10. Hardening
