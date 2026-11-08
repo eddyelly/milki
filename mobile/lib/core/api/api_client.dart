@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import '../config.dart';
 import 'token_store.dart';
 
-/// An API error with the server's human-readable message (CLAUDE.md §8 — never show raw codes).
+/// An API error with the server's human-readable message (CLAUDE.md §8, never show raw codes).
 class ApiException implements Exception {
   ApiException(this.status, this.code, this.message, [this.details]);
 

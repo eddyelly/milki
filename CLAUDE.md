@@ -1,6 +1,6 @@
-# CLAUDE.md — Milki
+# CLAUDE.md: Milki
 
-> **Milki** (Swahili: *property, estate*). *Ardhi yako, kumbukumbu ya kudumu* — "Your land, a permanent record."
+> **Milki** (Swahili: *property, estate*). *Ardhi yako, kumbukumbu ya kudumu*: "Your land, a permanent record."
 > A decentralized land transfer system on Hyperledger Fabric for the Ministry of Lands, Housing and Human Settlements Development (Tanzania).
 > Final year project. Read this whole file before every task.
 
@@ -32,7 +32,7 @@ Flutter app (landowners)      Next.js portal (officials, support, admin)      Pa
                       |            |            |              |
                    MongoDB       Redis        MinIO      Fabric Gateway client
                                                                |
-                         Hyperledger Fabric 2.5 LTS — channel `land-channel`
+                         Hyperledger Fabric 2.5 LTS, channel `land-channel`
                 Org1 = Ministry   Org2 = Land Office   Org3 = Banks   (Raft orderer)
                            chaincode `land-registry` (TypeScript)
 ```
@@ -69,7 +69,7 @@ milki/
 ├── backend/            # Express + TypeScript API
 ├── web/                # Next.js portal
 ├── mobile/             # Flutter app
-└── docs/               # openapi.yaml, diagrams, report assets
+└── docs/               # openapi.yaml, diagrams, report assets, manual/ (user manual with screenshots)
 ```
 
 ---
@@ -364,7 +364,7 @@ On-chain entities never use a hard delete; "Delete" is always a status transitio
 | **Transfer** | `InitiateTransfer` (owner) | `GetTransfer`, `QueryTransfers` | `AcceptTransfer`, `ConfirmPayments`, `VerifyTransfer`, `ApproveTransfer` | `CancelTransfer` (seller, before verification), `RejectTransfer` (officer/registrar) |
 | **Encumbrance** | `AddEncumbrance` (BANK) | in parcel + `GetEncumbrances` | `UpdateEncumbrance` (amount/terms) | `ReleaseEncumbrance` |
 | **Dispute** | `FlagDispute` (officer) | `GetDisputes` | `AddDisputeNote` | `ResolveDispute` |
-| **Document ref** | `AttachDocument` (hash + type) | in parcel/transfer | `SupersedeDocument` (new version; the old hash is kept) | — |
+| **Document ref** | `AttachDocument` (hash + type) | in parcel/transfer | `SupersedeDocument` (new version; the old hash is kept) | - |
 
 **Transfer state machine:**
 `INITIATED → BUYER_ACCEPTED → PAYMENTS_CONFIRMED → OFFICER_VERIFIED → APPROVED → COMPLETED`, and `CANCELLED` / `REJECTED` are terminal.
@@ -416,9 +416,9 @@ On-chain entities never use a hard delete; "Delete" is always a status transitio
 | Canned response | agent | ✓ | ✓ | ✓ |
 | KB article + category | support admin | public | ✓ | unpublish / soft delete |
 | Notification | system | ✓ | mark read / all read | delete |
-| Device token (FCM) | on login | — | refresh | on logout |
+| Device token (FCM) | on login | - | refresh | on logout |
 | Parcel/transfer cache | event listener only | ✓ | event listener only | never via API |
-| Audit log | system (every mutation) | admin, read-only | — | — |
+| Audit log | system (every mutation) | admin, read-only | - | - |
 
 ---
 

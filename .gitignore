@@ -7,7 +7,7 @@ out/
 coverage/
 *.tsbuildinfo
 
-# Env & secrets — never commit real values (CLAUDE.md §6)
+# Env & secrets, never commit real values (CLAUDE.md §6)
 .env
 .env.*
 !.env.example

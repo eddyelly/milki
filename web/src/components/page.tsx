@@ -53,7 +53,7 @@ export function Fields({ items, className }: { items: { label: string; value: Re
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
           <dt className="text-xs font-medium text-muted-foreground">{i.label}</dt>
-          <dd className={cn('mt-0.5 truncate font-medium', i.mono && 'font-mono text-sm')}>{i.value ?? '—'}</dd>
+          <dd className={cn('mt-0.5 truncate font-medium', i.mono && 'font-mono text-sm')}>{i.value ?? '-'}</dd>
         </div>
       ))}
     </dl>

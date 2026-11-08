@@ -1,6 +1,6 @@
 /**
  * DEV ONLY (CLAUDE.md §15): one account per role, password `Milki@2026`. Sign-in OTPs arrive in Mailpit
- * (http://localhost:8126). Idempotent — re-running updates the same accounts. Phase 10 extends this with
+ * (http://localhost:8126). Idempotent, re-running updates the same accounts. Phase 10 extends this with
  * demo parcels, transfers and tickets.
  *
  *   npm run seed

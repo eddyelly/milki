@@ -1,4 +1,4 @@
-# Milki — Hyperledger Caliper benchmark
+# Milki: Hyperledger Caliper benchmark
 
 Hyperledger Caliper 0.6.0 (`fabric:fabric-gateway` connector) against the Milki test network, run on
 **2026-11-08**. Full HTML report: [`caliper-report.html`](./caliper-report.html). Reproduce with
@@ -29,12 +29,12 @@ Hyperledger Caliper 0.6.0 (`fabric:fabric-gateway` connector) against the Milki 
 
 **Reading the numbers**
 
-- **Reads** (evaluate on one peer) stay at ~10 ms average up to 400 TPS offered — the QR verification and partner
+- **Reads** (evaluate on one peer) stay at ~10 ms average up to 400 TPS offered, so the QR verification and partner
   "verify ownership" paths are not a bottleneck.
 - **Writes** need endorsement from two organisations, Raft ordering and a CouchDB commit. Latency stays under
   1 s up to 25 TPS; around **35 TPS** the network saturates (latency climbs to ~5 s while throughput flattens).
   A national land registry processes far fewer transfers than that per second, so the ledger itself is not the
-  limit — and in production each organisation would run several peers on separate hosts.
+  limit, and in production each organisation would run several peers on separate hosts.
 - Block cutting (`BatchTimeout` 2 s, `MaxMessageCount` 10 in the test network) dominates write latency at low
   load; tuning it is the first lever for lower latency.
 

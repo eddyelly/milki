@@ -13,7 +13,7 @@ missing=()
 for c in "${CORE[@]}" "${PEERS[@]}"; do docker inspect "$c" >/dev/null 2>&1 || missing+=("$c"); done
 if (( ${#missing[@]} )); then
   echo "These containers do not exist: ${missing[*]}" >&2
-  echo "There is no network to resume — create one with ./network/scripts/up.sh" >&2
+  echo "There is no network to resume. Create one with ./network/scripts/up.sh" >&2
   exit 1
 fi
 

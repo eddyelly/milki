@@ -39,7 +39,7 @@ const columns: ColumnDef<typeof coreFeatures, Ticket>[] = [
       </div>
     ),
   },
-  { id: 'requester', header: 'Requester', cell: ({ row }) => <span className="text-sm">{row.original.requester ?? '—'}</span> },
+  { id: 'requester', header: 'Requester', cell: ({ row }) => <span className="text-sm">{row.original.requester ?? '-'}</span> },
   { id: 'category', header: 'Category', cell: ({ row }) => <span className="text-sm text-muted-foreground">{CATEGORY_LABEL[row.original.category]}</span> },
   { id: 'priority', header: 'Priority', cell: ({ row }) => <PriorityBadge priority={row.original.priority} /> },
   { id: 'status', header: 'Status', cell: ({ row }) => <StatusBadge kind="ticket" status={row.original.status} size="sm" /> },
@@ -171,7 +171,7 @@ export function SupportQueueView() {
               <EmptyState
                 icon={<Headset className="size-6" />}
                 title={tab === 'mine' ? 'Nothing assigned to you' : 'No tickets here'}
-                description={tab === 'mine' ? 'Claim one from Unassigned, or wait — new tickets appear live.' : 'Try another tab or clear the filters.'}
+                description={tab === 'mine' ? 'Claim one from Unassigned, or wait: new tickets appear live.' : 'Try another tab or clear the filters.'}
               />
             }
           />

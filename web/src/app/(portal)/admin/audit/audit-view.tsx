@@ -48,7 +48,7 @@ const columns: ColumnDef<typeof coreFeatures, AuditRow>[] = [
       </span>
     ),
   },
-  { id: 'tx', header: 'Ledger tx', cell: ({ row }) => <span className="font-mono text-xs text-muted-foreground">{row.original.txId ? shortHash(row.original.txId) : '—'}</span> },
+  { id: 'tx', header: 'Ledger tx', cell: ({ row }) => <span className="font-mono text-xs text-muted-foreground">{row.original.txId ? shortHash(row.original.txId) : '-'}</span> },
   {
     id: 'outcome',
     header: 'Outcome',
@@ -72,7 +72,7 @@ export function AuditView() {
   const log = useAuditLog({ action: area, outcome, entityId: debounced, page, limit: 50 });
   return (
     <>
-      <PageHeader title="Audit log" description="Every mutation and partner API call, newest first. Read-only — entries can never be changed or deleted." />
+      <PageHeader title="Audit log" description="Every mutation and partner API call, newest first. Read-only: entries can never be changed or deleted." />
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Select value={area} onValueChange={(v) => { setArea(v); setPage(1); }}>
           <SelectTrigger className="bg-card sm:w-52" aria-label="Area">

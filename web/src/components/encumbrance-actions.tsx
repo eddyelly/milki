@@ -39,9 +39,9 @@ export function AddEncumbrance({ p, lock }: { p: Parcel; lock: (open: boolean) =
         </>
       }
       impact={[
-        { label: 'Lender', value: user?.bankName ?? '—' },
-        { label: 'Amount', value: valid ? fmtMoney(toAmount(amount)) : '—' },
-        { label: 'Loan reference', value: reference || '—', mono: true },
+        { label: 'Lender', value: user?.bankName ?? '-' },
+        { label: 'Amount', value: valid ? fmtMoney(toAmount(amount)) : '-' },
+        { label: 'Loan reference', value: reference || '-', mono: true },
       ]}
       canConfirm={valid}
       confirmLabel="Sign and register"
@@ -80,7 +80,7 @@ export function AddEncumbrance({ p, lock }: { p: Parcel; lock: (open: boolean) =
       <div className="space-y-1.5">
         <Label htmlFor="enc-ref">Loan reference</Label>
         <Input id="enc-ref" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="CRDB/HL/2026/001" className="font-mono" />
-        <p className="text-xs text-muted-foreground">Your bank&apos;s reference only — never the borrower&apos;s personal details (they would be public on the ledger).</p>
+        <p className="text-xs text-muted-foreground">Your bank&apos;s reference only, never the borrower&apos;s personal details (they would be public on the ledger).</p>
       </div>
     </ConfirmAction>
   );
@@ -152,7 +152,7 @@ export function ReleaseEncumbrance({ e, parcelId, lock }: { e: Encumbrance; parc
           {e.lenderName} will no longer hold a {titleCase(e.type).toLowerCase()} on <span className="font-mono">{parcelId}</span>. If nothing else blocks it, the owner can transfer the parcel.
         </>
       }
-      consequences={['Releasing cannot be undone — a new encumbrance would have to be registered.']}
+      consequences={['Releasing cannot be undone. A new encumbrance would have to be registered.']}
       typeToConfirm={e.encumbranceId}
       canConfirm={reason.trim().length >= 3}
       confirmLabel="Sign and release"

@@ -22,7 +22,7 @@ export interface SlaView {
   target: 'FIRST_RESPONSE' | 'RESOLUTION' | 'NONE';
   dueAt: Date | null;
   state: SlaState;
-  /** Elapsed share of the window, 0..1+ (accent at 0.75, danger at 1 — §11). */
+  /** Elapsed share of the window, 0..1+ (accent at 0.75, danger at 1, §11). */
   elapsed: number;
 }
 

@@ -19,7 +19,7 @@ extension L10nX on BuildContext {
 
 String fmtArea(num sqm) => sqm >= 10000 ? '${NumberFormat('#,##0.##').format(sqm / 10000)} ha' : '${NumberFormat('#,##0.#').format(sqm)} m²';
 String fmtMoney(num v, [String currency = 'TZS']) => '${currency == 'TZS' ? 'TSh' : currency} ${NumberFormat('#,##0').format(v)}';
-String fmtDate(DateTime? d, [String? locale]) => d == null ? '—' : DateFormat.yMMMd(locale).format(d);
+String fmtDate(DateTime? d, [String? locale]) => d == null ? '-' : DateFormat.yMMMd(locale).format(d);
 String shortHash(String h, [int head = 8, int tail = 6]) => h.length <= head + tail + 1 ? h : '${h.substring(0, head)}…${h.substring(h.length - tail)}';
 String titleCase(String s) => s.toLowerCase().split('_').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}').join(' ');
 

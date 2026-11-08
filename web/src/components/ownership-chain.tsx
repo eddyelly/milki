@@ -89,7 +89,7 @@ export function OwnershipChain({ entries }: { entries: HistoryEntry[] }) {
                   <div>
                     <dt className="text-muted-foreground">Signed by</dt>
                     <dd>
-                      {e.changedBy ? `${ROLE_LABEL[e.changedBy.role ?? ''] ?? 'System'} · ${MSP_LABEL[e.changedBy.mspId] ?? e.changedBy.mspId}` : '—'}
+                      {e.changedBy ? `${ROLE_LABEL[e.changedBy.role ?? ''] ?? 'System'} · ${MSP_LABEL[e.changedBy.mspId] ?? e.changedBy.mspId}` : '-'}
                     </dd>
                   </div>
                 </motion.dl>

@@ -107,7 +107,7 @@ describe('tickets', () => {
     expect(queue.body.data[0]).toMatchObject({ number: t.number, requester: expect.stringMatching(/User \d+|\./) });
 
     await say(citizen.token, t.id, 'secret', true).expect(403);
-    await say(agent.token, t.id, 'Checked the logs — gateway delay.', true).expect(201);
+    await say(agent.token, t.id, 'Checked the logs: gateway delay.', true).expect(201);
     const reply = await say(agent.token, t.id, 'Habari! Please ask the buyer to refresh.');
     expect(reply.status).toBe(201);
 

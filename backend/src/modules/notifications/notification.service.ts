@@ -28,13 +28,13 @@ function firebase(): App | null {
   if (fcm !== undefined) return fcm;
   try {
     if (!existsSync(env.FCM_SERVICE_ACCOUNT_PATH)) {
-      logger.info('FCM service account not found — push notifications disabled (in-app + socket still work)');
+      logger.info('FCM service account not found: push notifications disabled (in-app + socket still work)');
       fcm = null;
     } else {
       fcm = initializeApp({ credential: cert(JSON.parse(readFileSync(env.FCM_SERVICE_ACCOUNT_PATH, 'utf8')) as Record<string, string>) }, 'milki');
     }
   } catch (err) {
-    logger.warn({ err: (err as Error).message }, 'FCM init failed — push disabled');
+    logger.warn({ err: (err as Error).message }, 'FCM init failed, push disabled');
     fcm = null;
   }
   return fcm;

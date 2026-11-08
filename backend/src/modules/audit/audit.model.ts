@@ -31,7 +31,7 @@ export interface AuditEntry {
   meta?: Record<string, unknown>;
 }
 
-/** Append-only audit trail (every mutation). Never throws — a failed audit write is logged, not surfaced. */
+/** Append-only audit trail (every mutation). Never throws, a failed audit write is logged, not surfaced. */
 export async function audit(req: Request | null, entry: AuditEntry): Promise<void> {
   try {
     await AuditLog.create({

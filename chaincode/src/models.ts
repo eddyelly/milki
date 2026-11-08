@@ -1,5 +1,5 @@
 /**
- * On-chain data model. Rule 4: no personal data here — people are referenced by opaque Milki user IDs
+ * On-chain data model. Rule 4: no personal data here, people are referenced by opaque Milki user IDs
  * (their Fabric CA enrollment ID) and salted hashes computed off-chain. Rule 5: documents are SHA-256 only.
  */
 
@@ -61,7 +61,7 @@ export interface Parcel {
   ownerNidaHash: string;
   /** Incremented on every change of owner; lets a transfer detect a stale seller. */
   ownershipVersion: number;
-  /** Derived from the flags below on every write — never set directly. */
+  /** Derived from the flags below on every write, never set directly. */
   status: ParcelStatus;
   frozen: boolean;
   frozenReason: string | null;
@@ -241,7 +241,7 @@ export interface DocumentRef {
   documentType: DocumentType;
   sha256: string;
   version: number;
-  /** First version's ID — groups every version of the same document. */
+  /** First version's ID, groups every version of the same document. */
   rootDocumentId: string;
   supersedes: string | null;
   supersededBy: string | null;

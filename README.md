@@ -1,12 +1,14 @@
 # Milki
 
-*Ardhi yako, kumbukumbu ya kudumu* — "Your land, a permanent record."
+*Ardhi yako, kumbukumbu ya kudumu*: "Your land, a permanent record."
 
 A decentralized land transfer system on Hyperledger Fabric for the Ministry of Lands, Housing and Human Settlements Development (Tanzania). Final year project.
 
+**[User manual](docs/manual/README.md)**: how Milki works, every role and what it does, step by step with screenshots of the web portal and the mobile app.
+
 See [CLAUDE.md](./CLAUDE.md) for the full architecture, rules, ports and build phases.
 
-## Quick start (Phase 1 — infra)
+## Quick start (Phase 1: infra)
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d
@@ -16,9 +18,9 @@ docker compose -f infra/docker-compose.yml up -d
 | Service | URL | Login (dev) |
 |---|---|---|
 | Mongo Express | http://localhost:8181 | `milki` / `milki_dev` |
-| RedisInsight | http://localhost:5541 | — |
+| RedisInsight | http://localhost:5541 | - |
 | MinIO console | http://localhost:9101 | `milki` / `milki_dev_secret` |
-| Mailpit | http://localhost:8126 | — |
+| Mailpit | http://localhost:8126 | - |
 
 MongoDB `localhost:27117`, Redis `localhost:6390`, MinIO API `localhost:9100`, SMTP `localhost:1126`.
 
@@ -50,7 +52,7 @@ npm run coverage                     # enforces ≥90% branch coverage
 cd backend
 cp .env.example .env          # then set real secrets (see comments)
 npm run seed                  # demo account per role, password Milki@2026 (dev only)
-npm run dev                   # http://localhost:4100 — docs at http://localhost:4100/api/docs
+npm run dev                   # http://localhost:4100, docs at http://localhost:4100/api/docs
 npm test                      # unit/API tests (needs infra up)
 npm run test:integration      # full stack on the live network (needs network + running API)
 ```
@@ -120,7 +122,7 @@ cd web && npm run test:e2e                         # login → approve, and the 
 ./benchmarks/caliper/run.sh                        # Hyperledger Caliper → benchmarks/caliper/report.html
 ```
 
-Latest benchmark: reads ~400 TPS at ~10 ms, writes ~25 TPS under 1 s (saturating at ~35 TPS) on a single 4-vCPU host — see [docs/benchmarks/caliper-results.md](docs/benchmarks/caliper-results.md).
+Latest benchmark: reads ~400 TPS at ~10 ms, writes ~25 TPS under 1 s (saturating at ~35 TPS) on a single 4-vCPU host. See [docs/benchmarks/caliper-results.md](docs/benchmarks/caliper-results.md).
 
 ## Build progress
 

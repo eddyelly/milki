@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
-/** Milki mark: a land parcel outline sealed with a gold dot — "your land, a permanent record". */
+/** Milki mark: a land parcel outline sealed with a gold dot, "your land, a permanent record". */
 export function Logo({ className, withWordmark = true, inverted = false }: { className?: string; withWordmark?: boolean; inverted?: boolean }) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>

@@ -7,7 +7,7 @@ import { LedgerTx } from './ledger-tx.model';
 import { serviceIdentity, userIdentity, type WalletUser } from './wallet';
 
 // -------------------------------------------------------------------------------------------------
-// Error mapping — chaincode errors are JSON `{ code, message, details? }` (CLAUDE.md §7.1).
+// Error mapping, chaincode errors are JSON `{ code, message, details? }` (CLAUDE.md §7.1).
 // -------------------------------------------------------------------------------------------------
 const STATUS_BY_CODE: Record<string, number> = {
   INVALID_ARGUMENT: 400,
@@ -97,7 +97,7 @@ export async function evaluate<T>(who: WalletUser | 'service', fn: string, args:
 }
 
 export interface SubmitOptions {
-  /** Private data, sent in the transient map (never in args — rule 4). */
+  /** Private data, sent in the transient map (never in args, rule 4). */
   transient?: Record<string, unknown>;
   entityType?: string;
   entityId?: string;
@@ -109,7 +109,7 @@ export interface SubmitResult<T> {
 }
 
 /**
- * Endorses and submits as the user, then returns immediately with the txId (endorsement errors — guards —
+ * Endorses and submits as the user, then returns immediately with the txId (endorsement errors, guards -
  * surface synchronously). Commit status is awaited in the background and pushed as Socket.IO `ledger:tx`.
  */
 export async function submit<T>(user: WalletUser, fn: string, args: string[], opts: SubmitOptions = {}): Promise<SubmitResult<T>> {

@@ -179,7 +179,7 @@ class _ConfirmSheetState<T> extends ConsumerState<_ConfirmSheet<T>> {
     try {
       result = await widget.onConfirm(ConfirmContext(idempotencyKey: _key, reauthToken: token));
     } catch (e) {
-      // A chaincode guard refused it at endorsement — nothing was written. Back to review with the reason.
+      // A chaincode guard refused it at endorsement, nothing was written. Back to review with the reason.
       setState(() {
         _pending = false;
         _step = _Step.review;

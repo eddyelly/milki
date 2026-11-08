@@ -30,7 +30,7 @@ export const addBody = z.object({
   type: z.enum(['MORTGAGE', 'CHARGE', 'CAVEAT', 'LIEN']),
   amount: z.number().positive().max(1e13),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).default('TZS'),
-  /** The bank's own loan reference — no borrower personal data (rule 4). */
+  /** The bank's own loan reference, no borrower personal data (rule 4). */
   reference: z.string().trim().min(2).max(80),
   termsHash: sha.nullable().optional(),
 });

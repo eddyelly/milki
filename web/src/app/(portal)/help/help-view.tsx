@@ -32,7 +32,7 @@ export function HelpView() {
     <>
       <PageHeader
         title={lang === 'en' ? 'Help centre' : 'Kituo cha msaada'}
-        description={lang === 'en' ? 'Answers landowners see in the app — useful when replying to tickets.' : 'Majibu ambayo wamiliki wa ardhi wanaona kwenye programu.'}
+        description={lang === 'en' ? 'Answers landowners see in the app, useful when replying to tickets.' : 'Majibu ambayo wamiliki wa ardhi wanaona kwenye programu.'}
         actions={
           <>
             <div className="flex rounded-lg border bg-card p-0.5" role="group" aria-label="Language">

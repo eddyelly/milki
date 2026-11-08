@@ -1,7 +1,7 @@
 import { type InferSchemaType, model, Schema } from 'mongoose';
 import { TRANSFER_STATUSES } from './transfer.types';
 
-/** Read cache of on-chain transfers — written only by the event listener. Never holds the sale price. */
+/** Read cache of on-chain transfers, written only by the event listener. Never holds the sale price. */
 const transferCacheSchema = new Schema(
   {
     transferId: { type: String, required: true, unique: true },

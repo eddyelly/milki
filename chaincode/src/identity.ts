@@ -21,7 +21,7 @@ export function enrollmentIdFromClientId(clientId: string): string {
 
 /**
  * Resolves the caller. The `role` comes from the CA-signed certificate attribute and must belong to
- * the caller's MSP — e.g. a "REGISTRAR" certificate issued by the bank CA (Org3) is rejected.
+ * the caller's MSP, e.g. a "REGISTRAR" certificate issued by the bank CA (Org3) is rejected.
  * Identities without a role (org admins, peer CLI) get role null and can only read.
  */
 export function getActor(ctx: Context): ActorRef {

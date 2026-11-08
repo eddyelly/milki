@@ -1,6 +1,6 @@
 import { type InferSchemaType, model, Schema } from 'mongoose';
 
-/** CLAUDE.md §11. Off-chain only — agents never touch ledger data. */
+/** CLAUDE.md §11. Off-chain only, agents never touch ledger data. */
 export const TICKET_STATUSES = ['OPEN', 'IN_PROGRESS', 'AWAITING_USER', 'RESOLVED', 'CLOSED'] as const;
 export const TICKET_PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'URGENT'] as const;
 export const TICKET_CATEGORIES = ['GETTING_STARTED', 'TRANSFERS', 'DOCUMENTS', 'MORTGAGES', 'ACCOUNT', 'OTHER'] as const;

@@ -9,7 +9,7 @@ export function ok<T>(res: Response, data: T, meta: Record<string, unknown> | nu
 
 export const created = <T>(res: Response, data: T, meta: Record<string, unknown> | null = null) => ok(res, data, meta, 201);
 
-/** Ledger writes: `202 { txId, status: "SUBMITTED" }` — the commit arrives later over Socket.IO / FCM. */
+/** Ledger writes: `202 { txId, status: "SUBMITTED" }`: the commit arrives later over Socket.IO / FCM. */
 export function submitted(res: Response, data: { txId: string } & Record<string, unknown>): Response {
   return ok(res, { ...data, status: 'SUBMITTED' }, null, 202);
 }

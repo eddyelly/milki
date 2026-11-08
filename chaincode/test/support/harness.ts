@@ -23,7 +23,7 @@ export const ID = {
   nmb: { mspId: 'Org3MSP', id: 'bank_nmb_1', attrs: { role: 'BANK_OFFICER', bank: 'NMB' } },
   bankNoCode: { mspId: 'Org3MSP', id: 'bank_x', attrs: { role: 'BANK_OFFICER' } },
   peerAdmin: { mspId: 'Org1MSP', id: 'Admin@org1.example.com', attrs: {} },
-  /** A REGISTRAR certificate issued by the bank CA — must be rejected. */
+  /** A REGISTRAR certificate issued by the bank CA, must be rejected. */
   forgedRegistrar: { mspId: 'Org3MSP', id: 'mallory', attrs: { role: 'REGISTRAR' } },
 } satisfies Record<string, FakeIdentity>;
 

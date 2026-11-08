@@ -87,7 +87,7 @@ export async function revokeRefreshToken(token: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Re-authentication for T3 (ledger) actions — CLAUDE.md §8
+// Re-authentication for T3 (ledger) actions, CLAUDE.md §8
 // ---------------------------------------------------------------------------------------------
 export const REAUTH_TTL_SECONDS = 300;
 

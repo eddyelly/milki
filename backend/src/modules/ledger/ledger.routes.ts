@@ -10,7 +10,7 @@ ledgerRouter.use(requireAuth);
 
 const txParams = z.object({ txId: z.string().regex(/^[a-f0-9]{64}$/, 'Not a transaction ID.') });
 
-/** Status of a submitted ledger transaction — fallback for clients that missed the `ledger:tx` socket event. */
+/** Status of a submitted ledger transaction, fallback for clients that missed the `ledger:tx` socket event. */
 ledgerRouter.get('/tx/:txId', validate({ params: txParams }), async (req: Request, res: Response) => {
   const user = currentUser(req);
   const tx = await LedgerTx.findOne({ txId: input<{ txId: string }>(req, 'params').txId }, { _id: 0 }).lean();

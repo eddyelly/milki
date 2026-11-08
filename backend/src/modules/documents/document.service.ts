@@ -84,7 +84,7 @@ async function storeThenSubmit<T extends { documentId: string }>(
   try {
     return await submit();
   } catch (err) {
-    // The ledger refused it — don't leave an orphaned object behind (unless another record points at it).
+    // The ledger refused it, don't leave an orphaned object behind (unless another record points at it).
     if (!existing) await removeObject(objectKey).catch((e: Error) => logger.warn({ objectKey, err: e.message }, 'orphan cleanup failed'));
     throw err;
   }

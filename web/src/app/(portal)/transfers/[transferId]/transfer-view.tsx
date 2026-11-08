@@ -138,7 +138,7 @@ function TransferView({ t }: { t: Transfer }) {
             ) : (
               <p className="text-sm text-muted-foreground">Not visible to your role.</p>
             )}
-            <p className="text-xs text-muted-foreground">Private data — stored only on Ministry and Land Office peers, never on the shared ledger.</p>
+            <p className="text-xs text-muted-foreground">Private data: stored only on Ministry and Land Office peers, never on the shared ledger.</p>
             <Fields
               className="pt-2 sm:grid-cols-1"
               items={[
@@ -150,7 +150,7 @@ function TransferView({ t }: { t: Transfer }) {
                       {shortHash(t.paymentEvidenceHash)} <CopyButton value={t.paymentEvidenceHash} label="Copy hash" />
                     </span>
                   ) : (
-                    '—'
+                    '-'
                   ),
                 },
               ]}
@@ -174,7 +174,7 @@ function TransferView({ t }: { t: Transfer }) {
                 <li key={`${h.txId}-${h.status}`} className="border-l-2 border-primary/30 pl-3">
                   <p className="text-sm font-semibold">{TRANSFER_STATUS[h.status].label}</p>
                   <p className="text-xs text-muted-foreground">
-                    {fmtDateTime(h.at)} · {ROLE_LABEL[h.by.role ?? ''] ?? '—'} · {MSP_LABEL[h.by.mspId] ?? h.by.mspId}
+                    {fmtDateTime(h.at)} · {ROLE_LABEL[h.by.role ?? ''] ?? '-'} · {MSP_LABEL[h.by.mspId] ?? h.by.mspId}
                   </p>
                   {h.note && <p className="text-sm">“{h.note}”</p>}
                   <p className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
@@ -213,7 +213,7 @@ function NoteField({ id, label, value, onChange, required }: { id: string; label
         {!required && <span className="font-normal text-muted-foreground"> (optional)</span>}
       </Label>
       <Textarea id={id} rows={3} maxLength={500} value={value} onChange={(e) => onChange(e.target.value)} />
-      <p className="text-xs text-muted-foreground">Recorded on the ledger — no personal data.</p>
+      <p className="text-xs text-muted-foreground">Recorded on the ledger, with no personal data.</p>
     </div>
   );
 }
@@ -234,8 +234,8 @@ function ConfirmPayments({ t, documents, lock }: { t: Transfer; documents: Docum
         </Button>
       }
       impact={[
-        { label: 'Payment reference', value: ref || '—', mono: true },
-        { label: 'Evidence', value: chosen ? `${titleCase(chosen.documentType)} · ${shortHash(chosen.sha256)}` : '—' },
+        { label: 'Payment reference', value: ref || '-', mono: true },
+        { label: 'Evidence', value: chosen ? `${titleCase(chosen.documentType)} · ${shortHash(chosen.sha256)}` : '-' },
       ]}
       canConfirm={ref.trim().length >= 3 && Boolean(chosen)}
       successMessage="Payments confirmed."
@@ -259,7 +259,7 @@ function ConfirmPayments({ t, documents, lock }: { t: Transfer; documents: Docum
             <SelectContent>
               {receipts.map((d) => (
                 <SelectItem key={d.documentId} value={d.documentId}>
-                  {titleCase(d.documentType)} — {d.file?.name ?? d.documentId}
+                  {titleCase(d.documentType)} · {d.file?.name ?? d.documentId}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -319,12 +319,12 @@ function Approve({ t, lock }: { t: Transfer; lock: (open: boolean) => void }) {
         </>
       }
       impact={[
-        { label: 'Verified by', value: t.verifiedBy ? `${ROLE_LABEL[t.verifiedBy.role ?? '']} · ${MSP_LABEL[t.verifiedBy.mspId]}` : '—' },
-        { label: 'Payment reference', value: t.paymentReference ?? '—', mono: true },
+        { label: 'Verified by', value: t.verifiedBy ? `${ROLE_LABEL[t.verifiedBy.role ?? '']} · ${MSP_LABEL[t.verifiedBy.mspId]}` : '-' },
+        { label: 'Payment reference', value: t.paymentReference ?? '-', mono: true },
         ...(t.sale ? [{ label: 'Sale price (private)', value: fmtMoney(t.sale.salePrice, t.sale.currency) }] : []),
       ]}
       confirmLabel="Sign and approve"
-      successMessage="Transfer approved — ownership moved."
+      successMessage="Transfer approved. Ownership moved."
       onConfirm={(ctx) => ledgerWrite('post', `/transfers/${t.transferId}/approve`, note.trim() ? { note: note.trim() } : {}, ctx)}
       onOpenChange={(o) => {
         lock(o);

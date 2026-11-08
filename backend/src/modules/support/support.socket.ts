@@ -64,7 +64,7 @@ export function attachSupportNamespace(io: Server): void {
       void socket.leave(staffRoom(id));
     });
 
-    /** `{ ticketId, typing, internal? }` — internal-note typing is shown to staff only. */
+    /** `{ ticketId, typing, internal? }`: internal-note typing is shown to staff only. */
     socket.on('typing', (p: { ticketId?: string; typing?: boolean; internal?: boolean }) => {
       const id = String(p?.ticketId ?? '');
       if (!socket.rooms.has(room(id))) return;

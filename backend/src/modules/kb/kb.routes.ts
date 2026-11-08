@@ -12,7 +12,7 @@ import { KbArticle, KbCategory, KbVote } from './kb.models';
 
 /**
  * Help centre (CLAUDE.md §11). Reading and voting are public; support agents and admins manage articles
- * (T1 create/update, T2 unpublish/delete — the UI enforces the tiers, the API is idempotent).
+ * (T1 create/update, T2 unpublish/delete, the UI enforces the tiers, the API is idempotent).
  */
 export const kbRouter = Router();
 const EDITORS = ['SUPPORT_AGENT', 'SYSTEM_ADMIN'] as const;
@@ -92,7 +92,7 @@ kbRouter.get('/articles/:slug', optionalAuth, validate({ params: z.object({ slug
   return ok(res, a);
 });
 
-/** "Was this helpful?" — public, one vote per reader (changing your vote moves it). */
+/** "Was this helpful?", public, one vote per reader (changing your vote moves it). */
 kbRouter.post(
   '/articles/:slug/vote',
   rateLimit({ windowMs: 60_000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false }),

@@ -108,7 +108,7 @@ partnerRouter.get('/parcels/:parcelId', scope('parcels:verify'), validate({ para
 });
 
 /**
- * "Does this person own this parcel?" — the bank sends the borrower's NIDA number (POST, so it never sits in URLs
+ * "Does this person own this parcel?", the bank sends the borrower's NIDA number (POST, so it never sits in URLs
  * or access logs); we compare its salted hash with the ledger's owner hash and answer yes/no only.
  */
 partnerRouter.post('/parcels/:parcelId/verify-owner', scope('parcels:verify'), validate({ params: parcelParams, body: z.object({ nida: nidaSchema }) }), async (req: Request, res: Response) => {

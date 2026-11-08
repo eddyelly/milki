@@ -14,7 +14,7 @@ import { CATEGORY_LABEL, useSupportMetrics, useSupportPresence } from '@/lib/sup
 const categoryConfig = { count: { label: 'Tickets', color: 'var(--chart-2)' } } satisfies ChartConfig;
 const csatConfig = { average: { label: 'Average stars', color: 'var(--gold)' } } satisfies ChartConfig;
 
-const duration = (minutes: number | null) => (minutes === null ? '—' : minutes < 60 ? `${minutes} min` : `${Math.round((minutes / 60) * 10) / 10} h`);
+const duration = (minutes: number | null) => (minutes === null ? '-' : minutes < 60 ? `${minutes} min` : `${Math.round((minutes / 60) * 10) / 10} h`);
 
 /** Admin/support metrics (CLAUDE.md §11): open tickets, first response, resolution, CSAT trend, tickets by category. */
 export function SupportMetrics() {
@@ -44,13 +44,13 @@ export function SupportMetrics() {
                 <AlarmClock className="size-4 text-info" aria-hidden /> Avg first response
               </p>
               <p className="text-3xl font-bold">{duration(d.avgFirstResponseMinutes)}</p>
-              <p className="text-xs text-muted-foreground">Resolution: {d.avgResolutionHours === null ? '—' : `${d.avgResolutionHours} h`} on average</p>
+              <p className="text-xs text-muted-foreground">Resolution: {d.avgResolutionHours === null ? '-' : `${d.avgResolutionHours} h`} on average</p>
             </Card>
             <Card className="gap-2 p-5">
               <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Star className="size-4 text-gold-ink" aria-hidden /> CSAT
               </p>
-              <p className="text-3xl font-bold">{d.csat.average === null ? '—' : `${d.csat.average.toFixed(1)} / 5`}</p>
+              <p className="text-3xl font-bold">{d.csat.average === null ? '-' : `${d.csat.average.toFixed(1)} / 5`}</p>
               <p className="text-xs text-muted-foreground">{d.csat.ratings} rating{d.csat.ratings === 1 ? '' : 's'}</p>
             </Card>
           </>

@@ -1,5 +1,5 @@
 # Milki local infrastructure (CLAUDE.md §5).
-# Ports are fixed — never change the host side of a mapping.
+# Ports are fixed, never change the host side of a mapping.
 # Fabric ports (7050-7054, 8054, 9051, 9443, 11051, 11054, 5984, 7984, 9984) are reserved; nothing here binds them.
 name: milki
 

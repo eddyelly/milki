@@ -454,7 +454,7 @@ function TicketControls({ ticket: t }: { ticket: Ticket }) {
     status !== t.status && { label: 'Status', value: `${TICKET_STATUS[t.status].label} → ${TICKET_STATUS[status].label}` },
     priority !== t.priority && { label: 'Priority', value: `${PRIORITY[t.priority].label} → ${PRIORITY[priority].label} (SLA recalculated)` },
     assignee !== (t.assigneeId ?? 'none') && { label: 'Assignee', value: `${t.assignee ?? 'Unassigned'} → ${agentName(assignee)}` },
-    tagList.join(',') !== t.tags.join(',') && { label: 'Tags', value: tagList.join(', ') || '—' },
+    tagList.join(',') !== t.tags.join(',') && { label: 'Tags', value: tagList.join(', ') || '-' },
   ].filter(Boolean) as { label: string; value: string }[];
 
   const body: Record<string, unknown> = {};

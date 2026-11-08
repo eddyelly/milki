@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Milki brand colours — the exact hex values from CLAUDE.md §9.1.
+/// Milki brand colours, the exact hex values from CLAUDE.md §9.1.
 class MilkiColors {
   const MilkiColors._();
 

@@ -335,7 +335,7 @@ paths:
   /kb/articles/{slug}:
     get: { tags: [Help centre], summary: 'Read an article (counts a view)', parameters: [{ name: slug, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/Error' } } }
   /kb/articles/{slug}/vote:
-    post: { tags: [Help centre], summary: '"Was this helpful?" — one vote per reader (user, or hashed IP when signed out). Body: helpful (boolean)', parameters: [{ name: slug, in: path, required: true, schema: { type: string } }], responses: { '200': { description: 'helpful, helpfulYes, helpfulNo' } } }
+    post: { tags: [Help centre], summary: '"Was this helpful?": one vote per reader (user, or hashed IP when signed out). Body: helpful (boolean)', parameters: [{ name: slug, in: path, required: true, schema: { type: string } }], responses: { '200': { description: 'helpful, helpfulYes, helpfulNo' } } }
   /kb/articles/{id}:
     patch: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Update / publish / unpublish an article (T1; unpublish is T2 in the UI)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
     delete: { tags: [Help centre], security: [{ bearer: [] }], summary: 'Soft-delete an article (T2)', parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
@@ -406,7 +406,7 @@ paths:
     get: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: assignable agents', responses: { '200': { description: OK } } }
   /support/canned:
     get: { tags: [Support], security: [{ bearer: [] }], summary: 'Staff: canned responses (q filter)', responses: { '200': { description: OK } } }
-    post: { tags: [Support], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Staff: create (title, body, tags) — T1', responses: { '201': { description: Created } } }
+    post: { tags: [Support], security: [{ bearer: [] }], parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], summary: 'Staff: create (title, body, tags), T1', responses: { '201': { description: Created } } }
   /support/canned/{id}:
     patch: { tags: [Support], security: [{ bearer: [] }], summary: Update (T1), parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
     delete: { tags: [Support], security: [{ bearer: [] }], summary: Soft delete (T2), parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }], responses: { '200': { description: OK } } }
@@ -574,7 +574,7 @@ paths:
     post:
       tags: [Disputes]
       security: [{ bearer: [] }]
-      summary: Flag a dispute (LAND_OFFICER, T3) — the parcel becomes DISPUTED and transfers stop
+      summary: 'Flag a dispute (LAND_OFFICER, T3): the parcel becomes DISPUTED and transfers stop'
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
       requestBody:
         required: true
@@ -585,7 +585,7 @@ paths:
               required: [category, summary]
               properties:
                 category: { type: string, enum: [OWNERSHIP, BOUNDARY, INHERITANCE, FRAUD, COURT_ORDER, OTHER] }
-                summary: { type: string, minLength: 10, maxLength: 500, description: Stored on-chain — no personal data }
+                summary: { type: string, minLength: 10, maxLength: 500, description: 'Stored on-chain, no personal data' }
       responses: { '202': { description: 'Submitted: { txId, disputeId, parcelId }' }, '403': { $ref: '#/components/responses/Error' } }
   /parcels/{parcelId}/transfers:
     parameters: [{ $ref: '#/components/parameters/ParcelId' }]
@@ -616,7 +616,7 @@ paths:
     post:
       tags: [Parcels]
       security: [{ bearer: [] }]
-      summary: Retire — the record stays, status becomes RETIRED (REGISTRAR, T3)
+      summary: 'Retire: the record stays, status becomes RETIRED (REGISTRAR, T3)'
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
       requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
       responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
@@ -692,7 +692,7 @@ paths:
     post:
       tags: [Transfers]
       security: [{ bearer: [] }]
-      summary: Buyer accepts (CITIZEN, T3) — INITIATED → BUYER_ACCEPTED
+      summary: 'Buyer accepts (CITIZEN, T3): INITIATED → BUYER_ACCEPTED'
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
       responses: { '202': { $ref: '#/components/responses/Submitted' }, '409': { $ref: '#/components/responses/Error' } }
   /transfers/{transferId}/confirm-payments:
@@ -720,7 +720,7 @@ paths:
     post:
       tags: [Transfers]
       security: [{ bearer: [] }]
-      summary: Registrar approval — moves ownership; APPROVED → COMPLETED (REGISTRAR, T3)
+      summary: Registrar approval moves ownership; APPROVED → COMPLETED (REGISTRAR, T3)
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/ReauthToken' }]
       requestBody: { content: { application/json: { schema: { type: object, properties: { note: { type: string } } } } } }
       responses: { '202': { $ref: '#/components/responses/Submitted' } }
@@ -784,8 +784,8 @@ paths:
     get:
       tags: [Documents]
       security: [{ bearer: [] }]
-      summary: Download — bytes are re-hashed and checked against the ledger first (headers X-Ledger-Verified, X-Content-SHA256)
-      responses: { '200': { description: The file }, '409': { description: INTEGRITY_FAILURE — stored file no longer matches the ledger } }
+      summary: 'Download: bytes are re-hashed and checked against the ledger first (headers X-Ledger-Verified, X-Content-SHA256)'
+      responses: { '200': { description: The file }, '409': { description: 'INTEGRITY_FAILURE: stored file no longer matches the ledger' } }
   /documents/{documentId}/verify:
     parameters: [{ $ref: '#/components/parameters/DocumentId' }]
     post:

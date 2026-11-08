@@ -101,7 +101,7 @@ function Login() {
         <Logo inverted className="relative text-white" />
         <div className="relative max-w-md space-y-4">
           <p className="text-3xl leading-tight font-bold">Ardhi yako, kumbukumbu ya kudumu.</p>
-          <p className="text-lg text-white/80">Your land, a permanent record — every registration, transfer and mortgage sealed on a shared ledger.</p>
+          <p className="text-lg text-white/80">Your land, a permanent record. Every registration, transfer and mortgage is sealed on a shared ledger.</p>
           <ul className="space-y-2 pt-2 text-sm text-white/75">
             <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-gold" aria-hidden /> Ministry, Land Office and banks sign every change together</li>
             <li className="flex items-center gap-2"><LockKeyhole className="size-4 text-gold" aria-hidden /> Sale prices and NIDA numbers never touch the public ledger</li>
@@ -149,7 +149,7 @@ function Login() {
                   </Button>
                   {process.env.NODE_ENV === 'development' && (
                     <p className="text-center text-xs text-muted-foreground">
-                      Dev: registrar@milki.dev · Milki@2026 — codes arrive in Mailpit (localhost:8126)
+                      Dev: registrar@milki.dev · Milki@2026. Codes arrive in Mailpit (localhost:8126)
                     </p>
                   )}
                 </motion.form>

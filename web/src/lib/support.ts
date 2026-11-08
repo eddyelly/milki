@@ -395,7 +395,7 @@ export function useTicketChat(ticketId: string, selfId: string | undefined) {
 // ------------------------------------------------------------------------------------------- SLA
 export function slaText(sla: Sla, now = Date.now()): string {
   if (sla.state === 'MET') return 'SLA met';
-  if (!sla.dueAt) return sla.state === 'BREACHED' ? 'SLA missed' : '—';
+  if (!sla.dueAt) return sla.state === 'BREACHED' ? 'SLA missed' : '-';
   const diff = new Date(sla.dueAt).getTime() - now;
   const abs = Math.abs(diff);
   const h = Math.floor(abs / 3_600_000);

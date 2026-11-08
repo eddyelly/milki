@@ -156,7 +156,7 @@ function ClientActions({ c, onChanged, onSecret }: { c: ApiClientRow; onChanged:
         tier="T1"
         title={`Edit ${c.name}`}
         impact={[
-          { label: 'Scopes', value: scopes.join(', ') || '—', mono: true },
+          { label: 'Scopes', value: scopes.join(', ') || '-', mono: true },
           { label: 'Rate limit', value: `${rate}/min` },
         ]}
         trigger={
@@ -196,7 +196,7 @@ function ClientActions({ c, onChanged, onSecret }: { c: ApiClientRow; onChanged:
       <ConfirmAction
         tier="T2"
         title={`Revoke ${c.name}?`}
-        consequences={['All calls with this key are refused from now on.', 'Revocation is permanent — create a new client to restore access.']}
+        consequences={['All calls with this key are refused from now on.', 'Revocation is permanent. Create a new client to restore access.']}
         typeToConfirm="REVOKE"
         canConfirm={reason.trim().length >= 3}
         trigger={

@@ -85,7 +85,7 @@ export interface CreateTicketInput {
 }
 
 export async function createTicket(user: AuthUser, input: CreateTicketInput, file?: UploadedFile) {
-  // Context links must belong to the requester (citizens) — agents see them read-only later.
+  // Context links must belong to the requester (citizens), agents see them read-only later.
   if (input.parcelId && user.role === 'CITIZEN' && !(await ParcelCache.exists({ parcelId: input.parcelId, ownerId: user.userId }))) {
     throw forbidden('You can only attach your own parcels to a ticket.');
   }
@@ -218,7 +218,7 @@ async function notifyRequester(t: TicketDoc, text: string, kind: 'reply' | 'reso
       userIds: [t.userId],
       type: kind === 'reply' ? 'support.reply' : 'support.resolved',
       title: { en: `${title.en} · ${t.number}`, sw: `${title.sw} · ${t.number}` },
-      body: kind === 'reply' ? { en: snippet, sw: snippet } : { en: 'Tell us how we did — rate this ticket in the app.', sw: 'Tuambie tulivyofanya — kadiria tiketi hii kwenye programu.' },
+      body: kind === 'reply' ? { en: snippet, sw: snippet } : { en: 'Tell us how we did: rate this ticket in the app.', sw: 'Tuambie tulivyofanya: kadiria tiketi hii kwenye programu.' },
       data: { ticketId: String(t._id), ticketNumber: t.number },
     });
     const u = await User.findOne({ userId: t.userId }, { email: 1, preferredLanguage: 1 }).lean();

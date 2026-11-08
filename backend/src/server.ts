@@ -26,7 +26,7 @@ async function main(): Promise<void> {
       registerLedgerListeners();
       startEventListener();
     } catch (err) {
-      logger.error({ err: (err as Error).message }, 'Fabric not reachable at startup — ledger endpoints will return 503 until it is');
+      logger.error({ err: (err as Error).message }, 'Fabric not reachable at startup. Ledger endpoints will return 503 until it is');
     }
   }
 

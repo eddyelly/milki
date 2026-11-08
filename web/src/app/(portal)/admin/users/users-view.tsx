@@ -122,7 +122,7 @@ export function UsersView() {
   }, [q]);
   const users = useAdminUsers({ q: debounced, role, status, page, limit: 20 });
   const refresh = () => void qc.invalidateQueries({ queryKey: ['admin-users'] });
-  const officeName = (id: string | null) => offices.data?.find((o) => o._id === id)?.name ?? '—';
+  const officeName = (id: string | null) => offices.data?.find((o) => o._id === id)?.name ?? '-';
 
   const columns: ColumnDef<typeof coreFeatures, AdminUser>[] = [
     {

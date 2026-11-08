@@ -44,7 +44,7 @@ export async function toWalletUser(user: AuthUser): Promise<WalletUser> {
   return { ...user, bankCode: doc?.bankCode };
 }
 
-/** "Juma Hassan" → "Juma H." — enough for a seller to confirm the right buyer without exposing full details. */
+/** "Juma Hassan" → "Juma H.", enough for a seller to confirm the right buyer without exposing full details. */
 export const displayName = (fullName: string): string => {
   const [first, ...rest] = fullName.trim().split(/\s+/);
   const last = rest.at(-1);

@@ -117,7 +117,7 @@ function OfficeCard({ o, onChanged }: { o: LandOffice; onChanged: () => void }) 
             <ConfirmAction
               tier="T2"
               title={`Delete ${o.name}?`}
-              consequences={['It disappears from office lists (soft delete).', 'Offices with active staff cannot be deleted — move them first.']}
+              consequences={['It disappears from office lists (soft delete).', 'Offices with active staff cannot be deleted. Move them first.']}
               typeToConfirm={o.code}
               trigger={
                 <Button size="icon-sm" variant="ghost" className="text-destructive" aria-label={`Delete ${o.name}`}>

@@ -35,7 +35,7 @@ documentRouter.post('/:documentId/supersede', ...t3, validate({ params: document
   return submitted(res, r);
 });
 
-/** Download — only after the bytes are re-verified against the ledger hash. */
+/** Download, only after the bytes are re-verified against the ledger hash. */
 documentRouter.get('/:documentId/download', validate({ params: documentParams }), async (req: Request, res: Response) => {
   const { data, sha, meta, ledger } = await svc.download(currentUser(req), did(req));
   const name = (meta.originalName ?? `${meta.documentId}`).replace(/[^\w.\- ]/g, '_');

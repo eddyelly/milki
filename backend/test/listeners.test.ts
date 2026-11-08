@@ -134,7 +134,7 @@ describe('ledger event handlers', () => {
 });
 
 describe('notifications API', () => {
-  it('list (with unread count), mark read, mark all read, delete — own notifications only', async () => {
+  it('list (with unread count), mark read, mark all read, delete, own notifications only', async () => {
     const me = await makeUser('CITIZEN');
     const other = await makeUser('CITIZEN');
     const [a] = await Notification.insertMany([

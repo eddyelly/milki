@@ -59,7 +59,7 @@ export class LandRegistryContract extends Contract {
     return out(await parcels.getParcelTransfers(ctx, parcelId));
   }
 
-  /** queryJson: { selector?, sort? } — CouchDB rich query, docType is forced to "parcel". */
+  /** queryJson: { selector?, sort? }, CouchDB rich query, docType is forced to "parcel". */
   @Transaction(false)
   @Returns('string')
   public async QueryParcels(ctx: Context, queryJson: string, pageSize: string, bookmark: string): Promise<string> {

@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @privateData.
   ///
   /// In en, this message translates to:
-  /// **'Private — kept only on Ministry and Land Office peers, never on the public ledger.'**
+  /// **'Private: kept only on Ministry and Land Office peers, never on the public ledger.'**
   String get privateData;
 
   /// No description provided for @acceptTransfer.
@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @stillWaiting.
   ///
   /// In en, this message translates to:
-  /// **'Still waiting for the ledger. Your request was submitted — check back shortly.'**
+  /// **'Still waiting for the ledger. Your request was submitted. Check back shortly.'**
   String get stillWaiting;
 
   /// No description provided for @verifyTitle.
@@ -1397,7 +1397,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsOnlineNow.
   ///
   /// In en, this message translates to:
-  /// **'An agent is online — replies usually take minutes.'**
+  /// **'An agent is online. Replies usually take minutes.'**
   String get agentsOnlineNow;
 
   /// No description provided for @attachFile.

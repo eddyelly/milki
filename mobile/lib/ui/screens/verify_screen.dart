@@ -81,7 +81,7 @@ class _Failed extends _Outcome {
 }
 
 /// QR verification (CLAUDE.md §10.4): a scanline sweeps the frame; a gold "Verified on Milki" badge flips in on
-/// success, the card shakes in earth on a mismatch. Public — works without signing in (`/check`).
+/// success, the card shakes in earth on a mismatch. Public, works without signing in (`/check`).
 class VerifyScreen extends ConsumerStatefulWidget {
   const VerifyScreen({super.key, this.standalone = false, this.startWithCamera = true});
   final bool standalone;

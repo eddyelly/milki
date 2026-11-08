@@ -7,7 +7,7 @@ import 'support_models.dart';
 
 typedef _Json = Map<String, dynamic>;
 
-/// A file chosen to attach (PDF/JPEG/PNG, ≤ 10 MB — checked again by magic bytes on the server).
+/// A file chosen to attach (PDF/JPEG/PNG, ≤ 10 MB, checked again by magic bytes on the server).
 class PickedAttachment {
   const PickedAttachment(this.name, this.bytes, this.mimeType);
   final String name;
@@ -29,7 +29,7 @@ class SupportRepository {
 
   Future<KbArticle> article(String slug) async => KbArticle.fromJson((await api.get<_Json>('/kb/articles/$slug')).data);
 
-  /// "Was this helpful?" — feedback, one vote per reader (changing it moves the vote).
+  /// "Was this helpful?", feedback, one vote per reader (changing it moves the vote).
   Future<void> vote(String slug, bool helpful) => api.send<_Json>('POST', '/kb/articles/$slug/vote', body: {'helpful': helpful});
 
   Future<List<Ticket>> myTickets() async =>

@@ -131,7 +131,7 @@ function ParcelView({ p }: { p: Parcel }) {
                 { label: 'Land use', value: titleCase(p.landUse) },
                 { label: 'Ownership version', value: `v${p.ownershipVersion}` },
                 { label: 'Registered', value: fmtDate(p.createdAt) },
-                { label: 'Last change', value: `${fmtDateTime(p.updatedAt)} · ${ROLE_LABEL[p.updatedBy.role ?? ''] ?? '—'} (${MSP_LABEL[p.updatedBy.mspId] ?? p.updatedBy.mspId})` },
+                { label: 'Last change', value: `${fmtDateTime(p.updatedAt)} · ${ROLE_LABEL[p.updatedBy.role ?? ''] ?? '-'} (${MSP_LABEL[p.updatedBy.mspId] ?? p.updatedBy.mspId})` },
                 {
                   label: 'Last transaction',
                   value: (
@@ -140,7 +140,7 @@ function ParcelView({ p }: { p: Parcel }) {
                     </span>
                   ),
                 },
-                { label: 'Address', value: p.location.address ?? '—' },
+                { label: 'Address', value: p.location.address ?? '-' },
               ]}
             />
             {p.lastChangeNote && <p className="mt-4 rounded-md bg-muted/60 px-3 py-2 text-sm text-muted-foreground">Registry note: “{p.lastChangeNote}”</p>}
@@ -156,7 +156,7 @@ function ParcelView({ p }: { p: Parcel }) {
             <p className="text-lg font-semibold">{p.owner.fullName ?? 'Landowner'}</p>
             {p.owner.phone && <p className="text-sm text-muted-foreground">{p.owner.phone}</p>}
             <p className="font-mono text-xs text-muted-foreground">{p.owner.userId}</p>
-            <p className="pt-2 text-xs text-muted-foreground">The owner’s NIDA number is never stored on the ledger — only a salted fingerprint.</p>
+            <p className="pt-2 text-xs text-muted-foreground">The owner’s NIDA number is never stored on the ledger, only a salted fingerprint.</p>
           </CardContent>
         </Card>
         <Card className="lg:col-span-3">
@@ -272,11 +272,11 @@ function FreezeToggle({ p, unfreeze, lock }: { p: Parcel; unfreeze?: boolean; lo
       impactSentence={
         unfreeze ? (
           <>
-            <span className="font-mono">{p.parcelId}</span> will be released — transfers and mortgages become possible again.
+            <span className="font-mono">{p.parcelId}</span> will be released: transfers and mortgages become possible again.
           </>
         ) : (
           <>
-            <span className="font-mono">{p.parcelId}</span> will be frozen — no transfer or mortgage can proceed until it is unfrozen.
+            <span className="font-mono">{p.parcelId}</span> will be frozen: no transfer or mortgage can proceed until it is unfrozen.
           </>
         )
       }

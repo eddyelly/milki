@@ -21,7 +21,7 @@ check() {
     if "$@" >/dev/null 2>&1; then pass "$name" ":$port"; return; fi
     sleep 2
   done
-  bad "$name" ":$port — not answering"
+  bad "$name" ":$port not answering"
 }
 
 tcp_open() { (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
@@ -53,7 +53,7 @@ smtp_banner() {
   [[ "$banner" == 220* ]]
 }
 
-echo "Milki infra — port verification"
+echo "Milki infra: port verification"
 check "MongoDB"            27117 mongo_ping
 check "Mongo Express"      8181  curl -fsS -u "$ME_USER:$ME_PASSWORD" http://localhost:8181/
 check "Redis"              6390  redis_ping

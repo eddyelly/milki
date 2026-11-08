@@ -23,7 +23,7 @@ export function DocumentList({ documents }: { documents: DocumentRef[] }) {
     setBusy(d.documentId);
     try {
       const { verified } = await downloadDocument(d.documentId, d.file?.name ?? `${d.documentId}.pdf`);
-      if (verified) toast.success('Downloaded — fingerprint matches the ledger.');
+      if (verified) toast.success('Downloaded. The fingerprint matches the ledger.');
     } catch (e) {
       toast.error(toApiError(e).message);
     } finally {

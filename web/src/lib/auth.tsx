@@ -38,7 +38,7 @@ const hint = {
       if (on) localStorage.setItem(HINT, '1');
       else localStorage.removeItem(HINT);
     } catch {
-      /* storage unavailable (private mode) — refresh simply runs every time */
+      /* storage unavailable (private mode), refresh simply runs every time */
     }
   },
 };

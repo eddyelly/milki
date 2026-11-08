@@ -56,7 +56,7 @@ export async function writeState(ctx: Context, key: string, value: unknown): Pro
   await ctx.stub.putState(key, toBytes(value));
 }
 
-/** Transaction time as ISO-8601 — identical on every endorser (rule 6: never Date.now()). */
+/** Transaction time as ISO-8601, identical on every endorser (rule 6: never Date.now()). */
 export function txTime(ctx: Context): string {
   return timestampToIso(ctx.stub.getTxTimestamp());
 }

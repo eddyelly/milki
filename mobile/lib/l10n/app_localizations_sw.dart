@@ -230,7 +230,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get privateData =>
-      'Siri — huhifadhiwa kwa Wizara na Ofisi ya Ardhi pekee, kamwe si kwenye daftari la umma.';
+      'Siri: huhifadhiwa kwa Wizara na Ofisi ya Ardhi pekee, kamwe si kwenye daftari la umma.';
 
   @override
   String get acceptTransfer => 'Kubali uhamisho';
@@ -404,7 +404,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get stillWaiting =>
-      'Bado tunasubiri daftari. Ombi lako limetumwa — angalia baadaye kidogo.';
+      'Bado tunasubiri daftari. Ombi lako limetumwa. Angalia baadaye kidogo.';
 
   @override
   String get verifyTitle => 'Hakiki kwenye Milki';
@@ -727,7 +727,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get agentsOnlineNow =>
-      'Wakala yuko mtandaoni — majibu huchukua dakika chache.';
+      'Wakala yuko mtandaoni. Majibu huchukua dakika chache.';
 
   @override
   String get attachFile => 'Ambatisha faili';

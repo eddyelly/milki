@@ -104,7 +104,7 @@ class ParcelRepository {
   ParcelRepository(this.api);
   final ApiClient api;
 
-  /// Cache list — citizens only ever get their own parcels.
+  /// Cache list, citizens only ever get their own parcels.
   Future<List<ParcelSummary>> mine() async =>
       (await api.get<List<dynamic>>('/parcels', query: {'limit': 100, 'sort': '-updatedAt'})).data.whereType<Json>().map(ParcelSummary.fromJson).toList();
 
@@ -117,7 +117,7 @@ class ParcelRepository {
   Future<List<DocumentRef>> documents(String parcelId) async =>
       (await api.get<List<dynamic>>('/parcels/$parcelId/documents')).data.whereType<Json>().map(DocumentRef.fromJson).toList();
 
-  /// Public QR verification — no sign-in needed.
+  /// Public QR verification, no sign-in needed.
   Future<ParcelVerification> verify(String parcelId) async => ParcelVerification.fromJson((await api.get<Json>('/verify/parcels/$parcelId')).data);
 
   Future<DocumentVerification> verifyDocument(String documentId, String sha256) async =>

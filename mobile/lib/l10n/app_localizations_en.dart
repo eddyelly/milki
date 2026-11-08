@@ -229,7 +229,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privateData =>
-      'Private — kept only on Ministry and Land Office peers, never on the public ledger.';
+      'Private: kept only on Ministry and Land Office peers, never on the public ledger.';
 
   @override
   String get acceptTransfer => 'Accept transfer';
@@ -403,7 +403,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stillWaiting =>
-      'Still waiting for the ledger. Your request was submitted — check back shortly.';
+      'Still waiting for the ledger. Your request was submitted. Check back shortly.';
 
   @override
   String get verifyTitle => 'Verify on Milki';
@@ -724,7 +724,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentsOnlineNow =>
-      'An agent is online — replies usually take minutes.';
+      'An agent is online. Replies usually take minutes.';
 
   @override
   String get attachFile => 'Attach a file';

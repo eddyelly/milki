@@ -3,7 +3,7 @@
 #   1. network up + chaincode deployed (network/scripts/up.sh or start.sh)
 #   2. demo data for the read rounds:  (cd backend && npm run seed && npm run seed:demo)
 #   3. ./run.sh            → report.html (and results/ summary)
-# The write rounds add ~400 parcels in region "Benchmark" — run on a throwaway network for a clean register.
+# The write rounds add ~400 parcels in region "Benchmark", run on a throwaway network for a clean register.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"

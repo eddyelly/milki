@@ -13,7 +13,7 @@ import type { LedgerTransfer, TransferPrivateDetails } from './transfer.types';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** A masked reference to a NIDA number for the private collection — never the number itself. */
+/** A masked reference to a NIDA number for the private collection, never the number itself. */
 const nidaRef = (last4: string | null | undefined) => `NIDA••••${last4 ?? '????'}`;
 
 async function activeCitizen(filter: Record<string, unknown>, who: string) {

@@ -23,7 +23,7 @@ const disputeParams = z.object({
 
 export const flagBody = z.object({
   category: z.enum(['OWNERSHIP', 'BOUNDARY', 'INHERITANCE', 'FRAUD', 'COURT_ORDER', 'OTHER']),
-  /** Shown to officials and stored on-chain — describe the issue, never personal data. */
+  /** Shown to officials and stored on-chain, describe the issue, never personal data. */
   summary: z.string().trim().min(10, 'Describe the dispute in at least 10 characters.').max(500),
 });
 

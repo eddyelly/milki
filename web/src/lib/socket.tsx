@@ -85,7 +85,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           done = true;
           clearInterval(poll);
           off();
-          reject(new Error('Still waiting for the ledger. Your request was submitted — check back shortly.'));
+          reject(new Error('Still waiting for the ledger. Your request was submitted. Check back shortly.'));
         }, timeoutMs);
       }),
     [subscribe],

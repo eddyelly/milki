@@ -68,7 +68,7 @@ function NotificationBell() {
   const { data } = useNotifications({ limit: 6 });
   const qc = useQueryClient();
   const unread = data?.meta.unread ?? 0;
-  // Read receipts are UI state, not data the user creates — no confirmation dialog (see CLAUDE.md §8 note).
+  // Read receipts are UI state, not data the user creates, no confirmation dialog (see CLAUDE.md §8 note).
   const markAll = useMutation({
     mutationFn: () => http.post('/notifications/read-all', {}),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['notifications'] }),

@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
  * T1 Standard: summary → Confirm → toast.
  * T2 Destructive: red; type the identifier to enable; consequences stated.
  * T3 Ledger: impact summary → "permanent and publicly auditable" → re-authentication → sealed-on-ledger animation.
- * (CLAUDE.md §8 — every mutation in the portal goes through this component.)
+ * (CLAUDE.md §8, every mutation in the portal goes through this component.)
  */
 export type Tier = 'T1' | 'T2' | 'T3';
 
@@ -152,7 +152,7 @@ export function ConfirmAction<R>(props: ConfirmActionProps<R>) {
     try {
       result = await props.onConfirm({ idempotencyKey: keyRef.current, reauthToken });
     } catch (e) {
-      // Endorsement refused (a chaincode guard) — nothing was written. Back to review with the reason.
+      // Endorsement refused (a chaincode guard), nothing was written. Back to review with the reason.
       setPending(false);
       setStep('review');
       setError(toApiError(e).message);

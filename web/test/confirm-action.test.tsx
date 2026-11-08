@@ -17,7 +17,7 @@ beforeEach(() => {
   waitForCommit.mockReset();
 });
 
-describe('ConfirmAction — T1 standard', () => {
+describe('ConfirmAction: T1 standard', () => {
   it('shows the summary, confirms with an idempotency key, then closes', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn().mockResolvedValue({ ok: true });
@@ -47,7 +47,7 @@ describe('ConfirmAction — T1 standard', () => {
   });
 });
 
-describe('ConfirmAction — T2 destructive', () => {
+describe('ConfirmAction: T2 destructive', () => {
   it('stays disabled until the identifier is typed exactly, and states consequences', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn().mockResolvedValue(undefined);
@@ -77,7 +77,7 @@ describe('ConfirmAction — T2 destructive', () => {
   });
 });
 
-describe('ConfirmAction — T3 ledger', () => {
+describe('ConfirmAction: T3 ledger', () => {
   const setup = (onConfirm: (ctx: ConfirmContext) => Promise<unknown>, extra: Partial<Parameters<typeof ConfirmAction>[0]> = {}) =>
     render(
       <ConfirmAction

@@ -1,6 +1,6 @@
 import { model, Schema } from 'mongoose';
 
-// Transaction tracking — lets clients poll GET /ledger/tx/:txId if they missed the socket event.
+// Transaction tracking, lets clients poll GET /ledger/tx/:txId if they missed the socket event.
 const ledgerTxSchema = new Schema(
   {
     txId: { type: String, required: true, unique: true },

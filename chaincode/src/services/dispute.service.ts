@@ -21,7 +21,7 @@ function event(ctx: Context, actor: ActorRef, d: Dispute, action: string): void 
 
 /**
  * Flags a dispute on a parcel; while any dispute is open the parcel is DISPUTED and cannot change hands.
- * `summary` is shown to officials — it must describe the issue without personal data (names/NIDA go off-chain).
+ * `summary` is shown to officials, it must describe the issue without personal data (names/NIDA go off-chain).
  */
 export async function flagDispute(ctx: Context, parcelIdArg: string, raw: string): Promise<Dispute> {
   const actor = getActor(ctx);

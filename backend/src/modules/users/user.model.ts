@@ -5,7 +5,7 @@ const sealedSchema = new Schema({ iv: String, tag: String, ct: String }, { _id: 
 
 const userSchema = new Schema(
   {
-    /** Public, opaque user ID — also the Fabric CA enrollment ID and the on-chain owner/party ID. */
+    /** Public, opaque user ID, also the Fabric CA enrollment ID and the on-chain owner/party ID. */
     userId: { type: String, required: true, unique: true },
     role: { type: String, enum: ROLES, required: true, index: true },
     fullName: { type: String, required: true, trim: true },
@@ -13,7 +13,7 @@ const userSchema = new Schema(
     /** E.164, e.g. +255712345678. */
     phone: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
-    /** HMAC of the NIDA number — the same value is used on-chain (ownerNidaHash). */
+    /** HMAC of the NIDA number, the same value is used on-chain (ownerNidaHash). */
     nidaHash: { type: String, unique: true, sparse: true },
     nidaSealed: { type: sealedSchema, default: undefined },
     nidaLast4: { type: String },
@@ -41,7 +41,7 @@ export type UserAttrs = InferSchemaType<typeof userSchema>;
 export type UserDoc = HydratedDocument<UserAttrs>;
 export const User = model('User', userSchema);
 
-/** Shape returned by the API — never hashes, sealed values or the full NIDA. */
+/** Shape returned by the API, never hashes, sealed values or the full NIDA. */
 export function publicUser(u: UserDoc) {
   return {
     userId: u.userId,

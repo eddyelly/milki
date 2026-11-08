@@ -7,8 +7,8 @@ const jakarta = Plus_Jakarta_Sans({ variable: '--font-jakarta', subsets: ['latin
 const jetbrains = JetBrains_Mono({ variable: '--font-jetbrains', subsets: ['latin'], weight: ['400', '500', '600'] });
 
 export const metadata: Metadata = {
-  title: { default: 'Milki — Land Registry', template: '%s · Milki' },
-  description: 'Ardhi yako, kumbukumbu ya kudumu — the permanent record of land in Tanzania.',
+  title: { default: 'Milki · Land Registry', template: '%s · Milki' },
+  description: 'Ardhi yako, kumbukumbu ya kudumu: the permanent record of land in Tanzania.',
 };
 
 export const viewport: Viewport = {

@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { ACCOUNTS, otpFor, PASSWORD, prepareAcceptedTransfer, publicVerify } from './api';
 
 /**
- * CLAUDE.md §13 phase 10 — end-to-end transfer on the live stack:
+ * CLAUDE.md §13 phase 10, end-to-end transfer on the live stack:
  * landowners (mobile app, via the API) register → initiate → accept → upload the TRA receipt;
  * a land officer confirms payments and verifies, and a registrar approves, in the portal (T3 each);
  * public QR verification then shows the buyer as owner, read from the ledger.

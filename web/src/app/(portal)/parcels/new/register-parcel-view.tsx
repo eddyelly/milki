@@ -140,7 +140,7 @@ export function RegisterParcelView() {
               <div className="space-y-1.5">
                 <Label>Parcel ID</Label>
                 <p className="flex h-9 items-center rounded-md border bg-muted/50 px-3 font-mono text-sm font-semibold" aria-live="polite">
-                  {parcelId ?? '—'}
+                  {parcelId ?? '-'}
                 </p>
               </div>
             </CardContent>
@@ -236,7 +236,7 @@ export function RegisterParcelView() {
             impact={[
               { label: 'Title number', value: v.titleNumber, mono: true },
               { label: 'Location', value: `${v.ward}, ${v.district}, ${region}` },
-              { label: 'Area', value: v.area ? fmtArea(v.area) : '—' },
+              { label: 'Area', value: v.area ? fmtArea(v.area) : '-' },
               { label: 'Land use', value: titleCase(v.landUse) },
             ]}
             successMessage={`${parcelId} registered.`}

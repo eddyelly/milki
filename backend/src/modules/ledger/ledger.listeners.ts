@@ -53,6 +53,7 @@ async function ownerOf(parcelId: string): Promise<string | null> {
 }
 
 const L = (en: string, sw: string): Localized => ({ en, sw });
+const endSentence = (s: string): string => (s.endsWith('.') ? s : `${s}.`);
 
 /** Who hears about what (CLAUDE.md §11/§12). Returns null for events that need no alert. */
 export async function buildNotification(e: MilkiEvent): Promise<NotificationJob | null> {
@@ -133,7 +134,8 @@ export async function notifyLedgerEvent(e: MilkiEvent, ctx: EventContext): Promi
       type: 'Transfer.Approved',
       userIds: typeof e.data?.sellerId === 'string' ? [e.data.sellerId] : [],
       title: L('Transfer completed', 'Uhamisho umekamilika'),
-      body: L(`Ownership of ${e.parcelId} has moved to ${buyerName}.`, `Umiliki wa ${e.parcelId} umehamia kwa ${buyerName}.`),
+      // Short names end in a full stop ("Juma H."), so don't add a second one.
+      body: L(`Ownership of ${e.parcelId} has moved to ${endSentence(buyerName)}`, `Umiliki wa ${e.parcelId} umehamia kwa ${endSentence(buyerName)}`),
       data: { parcelId: e.parcelId, transferId: e.id, txId: e.txId },
     });
   }

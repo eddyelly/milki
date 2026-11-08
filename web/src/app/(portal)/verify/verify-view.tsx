@@ -59,7 +59,7 @@ export function VerifyView() {
       const form = new FormData();
       form.append('file', file);
       const r = await http.post<{ data: Verification }>(`/documents/${documentId.trim().toUpperCase()}/verify`, form);
-      // Let the scan read as a scan (≥700 ms) — the answer itself comes straight from the ledger.
+      // Let the scan read as a scan (≥700 ms), the answer itself comes straight from the ledger.
       await new Promise((res) => setTimeout(res, Math.max(0, (reduce ? 0 : 700) - (Date.now() - started))));
       setResult(r.data.data);
     } catch (e) {
@@ -134,7 +134,7 @@ export function VerifyView() {
           <AnimatePresence mode="wait">
             {!result && !error && (
               <motion.p key="idle" exit={{ opacity: 0 }} className="max-w-xs text-center text-muted-foreground">
-                The result appears here. Nothing is stored — this is a read-only check.
+                The result appears here. Nothing is stored. This is a read-only check.
               </motion.p>
             )}
             {error && (

@@ -1,5 +1,5 @@
 /**
- * DEV ONLY (CLAUDE.md §13 phase 10): demo data on the live network — 3 regions with land offices, 30 parcels,
+ * DEV ONLY (CLAUDE.md §13 phase 10): demo data on the live network, 3 regions with land offices, 30 parcels,
  * transfers in every state, a bank mortgage and a dispute. Run `npm run seed` first (accounts), then:
  *
  *   npm run seed:demo
@@ -145,7 +145,7 @@ async function main(): Promise<void> {
 
   const byEmail = async (email: string): Promise<AuthUser & { name: string }> => {
     const u = await User.findOne({ email }).lean();
-    if (!u) throw new Error(`${email} is missing — run "npm run seed" first.`);
+    if (!u) throw new Error(`${email} is missing. Run "npm run seed" first.`);
     return { userId: u.userId, role: u.role as Role, name: u.fullName };
   };
   const [asha, juma, neema, baraka, zawadi, rehema] = await Promise.all(
@@ -188,7 +188,7 @@ async function main(): Promise<void> {
 
   /** Seller → buyer, advanced to `until`. */
   async function transfer(parcelId: string, seller: AuthUser, buyer: AuthUser, price: number, until: 'INITIATED' | 'BUYER_ACCEPTED' | 'PAYMENTS_CONFIRMED' | 'OFFICER_VERIFIED' | 'COMPLETED' | 'CANCELLED') {
-    if (!(await fresh(parcelId))) return logger.info({ parcelId }, 'transfer scenario already present — skipped');
+    if (!(await fresh(parcelId))) return logger.info({ parcelId }, 'transfer scenario already present, skipped');
     const t = await step(`${parcelId}: initiated`, () => initiate(seller, { parcelId, buyer: { userId: buyer.userId }, salePrice: price, currency: 'TZS' }));
     if (until === 'INITIATED') return;
     if (until === 'CANCELLED') {

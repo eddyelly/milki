@@ -116,7 +116,7 @@ export interface ParcelHistoryEntry {
   parcel: Parcel | null;
 }
 
-/** Every committed version of the parcel, oldest first — the ownership chain. */
+/** Every committed version of the parcel, oldest first, the ownership chain. */
 export async function getParcelHistory(ctx: Context, parcelIdArg: string): Promise<ParcelHistoryEntry[]> {
   const parcelId = v.parcelId(parcelIdArg);
   await loadParcel(ctx, parcelId);

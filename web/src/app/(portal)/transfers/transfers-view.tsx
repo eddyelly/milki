@@ -95,7 +95,7 @@ function Transfers() {
 
   return (
     <>
-      <PageHeader title="Transfers" description="Work queue — oldest first in action tabs so nothing waits too long." />
+      <PageHeader title="Transfers" description="Work queue, oldest first in action tabs so nothing waits too long." />
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <Tabs
           value={tab}

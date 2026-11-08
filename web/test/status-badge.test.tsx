@@ -4,7 +4,7 @@ import { StatusBadge } from '@/components/status-badge';
 import { PARCEL_STATUS, TRANSFER_STATUS } from '@/lib/status';
 import { PARCEL_STATUSES, TRANSFER_STATUSES } from '@/lib/types';
 
-/** CLAUDE.md §9.1: a status colour is always paired with an icon and a label — never colour alone. */
+/** CLAUDE.md §9.1: a status colour is always paired with an icon and a label, never colour alone. */
 describe('StatusBadge', () => {
   it.each(PARCEL_STATUSES)('parcel %s renders label, icon and accessible status', (status) => {
     render(<StatusBadge kind="parcel" status={status} />);

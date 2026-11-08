@@ -22,7 +22,7 @@ class MilkiWorkload extends WorkloadModuleBase {
     const raw = status.GetResult ? status.GetResult() : status.result;
     const page = JSON.parse(Buffer.from(raw).toString('utf8'));
     const ids = (page.items ?? page.records ?? []).map((p) => p.parcelId).filter(Boolean);
-    if (ids.length === 0) throw new Error('No parcels on the ledger — run "npm run seed:demo" in backend/ first.');
+    if (ids.length === 0) throw new Error('No parcels on the ledger. Run "npm run seed:demo" in backend/ first.');
     return ids;
   }
 

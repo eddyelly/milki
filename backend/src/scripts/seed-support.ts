@@ -36,8 +36,8 @@ const ARTICLES = [
     'getting-started',
     ['Signing in and SMS codes', 'Kuingia na misimbo ya SMS'],
     [
-      'Sign in with your phone number (or email) and password. We then send a **6-digit code** by SMS that works once and expires after 5 minutes.\n\n- Did not get the code? Wait 30 seconds and tap "Resend code"\n- Never share the code — Milki staff will never ask for it',
-      'Ingia kwa namba yako ya simu (au barua pepe) na nenosiri. Kisha tunakutumia **msimbo wa tarakimu 6** kwa SMS unaotumika mara moja na kuisha baada ya dakika 5.\n\n- Hukupata msimbo? Subiri sekunde 30 kisha bonyeza "Tuma msimbo tena"\n- Usimpe mtu msimbo — watumishi wa Milki hawatauomba kamwe',
+      'Sign in with your phone number (or email) and password. We then send a **6-digit code** by SMS that works once and expires after 5 minutes.\n\n- Did not get the code? Wait 30 seconds and tap "Resend code"\n- Never share the code. Milki staff will never ask for it',
+      'Ingia kwa namba yako ya simu (au barua pepe) na nenosiri. Kisha tunakutumia **msimbo wa tarakimu 6** kwa SMS unaotumika mara moja na kuisha baada ya dakika 5.\n\n- Hukupata msimbo? Subiri sekunde 30 kisha bonyeza "Tuma msimbo tena"\n- Usimpe mtu msimbo. Watumishi wa Milki hawatauomba kamwe',
     ],
     ['otp', 'login'],
   ),
@@ -108,7 +108,7 @@ const CANNED = [
   { title: 'OTP not received', body: 'SMS codes can take up to a minute. Please wait 30 seconds and tap "Resend code". If it still does not arrive, confirm the phone number on your account ends with the digits shown on the sign-in screen.', tags: ['otp'] },
   { title: 'Mortgage blocks transfer', body: 'Your parcel has an active mortgage, so it cannot be transferred yet. Please ask the bank to release the mortgage on Milki once the loan is settled; the transfer button will then become available.', tags: ['mortgage'] },
   { title: 'Escalated to land office', body: 'I have passed this to a land officer at your district office. They will review the record and we will update you here.', tags: ['escalation'] },
-  { title: 'Resolved — anything else?', body: 'I have marked this as resolved. If anything is still not right you can reopen the ticket within 7 days. Asante!', tags: ['closing'] },
+  { title: 'Resolved: anything else?', body: 'I have marked this as resolved. If anything is still not right you can reopen the ticket within 7 days. Asante!', tags: ['closing'] },
 ];
 
 export async function seedSupport(users: { citizen: string; buyer: string; agent: string }): Promise<{ articles: number; tickets: number }> {
@@ -150,7 +150,7 @@ export async function seedSupport(users: { citizen: string; buyer: string; agent
     await TicketMessage.create([
       { ticketId: t2._id, authorId: users.buyer, authorRole: 'CITIZEN', body: 'It happened again this morning.', readBy: [{ userId: users.buyer, at: new Date() }] },
       { ticketId: t2._id, authorId: users.agent, authorRole: 'SUPPORT_AGENT', body: CANNED[1]!.body, readBy: [{ userId: users.agent, at: new Date() }] },
-      { ticketId: t2._id, authorId: users.agent, authorRole: 'SUPPORT_AGENT', body: 'Checked the SMS gateway logs — delivery delays on one network yesterday.', internal: true, readBy: [{ userId: users.agent, at: new Date() }] },
+      { ticketId: t2._id, authorId: users.agent, authorRole: 'SUPPORT_AGENT', body: 'Checked the SMS gateway logs: delivery delays on one network yesterday.', internal: true, readBy: [{ userId: users.agent, at: new Date() }] },
     ]);
     const resolvedAt = new Date(now - 3 * 86_400_000);
     await make(users.citizen, now - 5 * 86_400_000, {
